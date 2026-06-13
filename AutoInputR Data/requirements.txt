@@ -1,0 +1,9 @@
+customtkinter
+mss
+numpy
+opencv-python
+Pillow
+pyautogui
+pydirectinput
+pynput
+pystray

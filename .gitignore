@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Configuración generada por AutoInputR
+config.json
+tracker_template.png
+*.log
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# PyInstaller
+AutoInputR Data/build/
+AutoInputR Data/dist/
+AutoInputR Data/*.spec
+
+# Ejecutable copiado para Inno Setup
+AutoInputR_v1.2.exe
+
+# Instaladores generados
+installer/
+*.exe
+*.msi
+
+# Editores
+.vscode/
+.idea/
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
