@@ -1,5 +1,5 @@
 #define MyAppName "AutoInputR"
-#define MyAppVersion "1.2.3.1"
+#define MyAppVersion "1.3.0"
 #define MyAppPublisher "Robert"
 #define MyAppExeName "AutoInputR_v1.2.exe"
 
@@ -13,7 +13,7 @@ DefaultDirName={localappdata}\Programs\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir=installer
-OutputBaseFilename=AutoInputR_Setup_v1.2.3.1
+OutputBaseFilename={#MyAppName}_Setup_v{#MyAppVersion}
 SetupIconFile=AutoInputR Data\Logo2AIR.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 Compression=lzma

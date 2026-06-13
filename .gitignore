@@ -1,9 +1,11 @@
 # Python
 __pycache__/
 *.py[cod]
+*.pyo
+*.pyd
 .pytest_cache/
 
-# Configuración generada por AutoInputR
+# Configuración local de AutoInputR
 config.json
 tracker_template.png
 *.log
@@ -23,6 +25,7 @@ AutoInputR_v1.2.exe
 
 # Instaladores generados
 installer/
+Output/
 *.exe
 *.msi
 

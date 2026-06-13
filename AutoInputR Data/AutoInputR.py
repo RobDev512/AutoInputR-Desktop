@@ -42,6 +42,55 @@ if sys.platform == "win32":
         except Exception:
             pass
 
+    try:
+        user32 = ctypes.windll.user32
+        kernel32 = ctypes.windll.kernel32
+
+        user32.GetForegroundWindow.restype = ctypes.wintypes.HWND
+        user32.IsWindow.argtypes = [ctypes.wintypes.HWND]
+        user32.IsWindow.restype = ctypes.wintypes.BOOL
+        user32.IsWindowVisible.argtypes = [ctypes.wintypes.HWND]
+        user32.IsWindowVisible.restype = ctypes.wintypes.BOOL
+        user32.IsIconic.argtypes = [ctypes.wintypes.HWND]
+        user32.IsIconic.restype = ctypes.wintypes.BOOL
+        user32.GetWindowTextLengthW.argtypes = [ctypes.wintypes.HWND]
+        user32.GetWindowTextLengthW.restype = ctypes.c_int
+        user32.GetWindowTextW.argtypes = [
+            ctypes.wintypes.HWND,
+            ctypes.wintypes.LPWSTR,
+            ctypes.c_int
+        ]
+        user32.GetWindowTextW.restype = ctypes.c_int
+        user32.GetClassNameW.argtypes = [
+            ctypes.wintypes.HWND,
+            ctypes.wintypes.LPWSTR,
+            ctypes.c_int
+        ]
+        user32.GetClassNameW.restype = ctypes.c_int
+        user32.GetWindowThreadProcessId.argtypes = [
+            ctypes.wintypes.HWND,
+            ctypes.POINTER(ctypes.wintypes.DWORD)
+        ]
+        user32.GetWindowThreadProcessId.restype = ctypes.wintypes.DWORD
+
+        kernel32.OpenProcess.argtypes = [
+            ctypes.wintypes.DWORD,
+            ctypes.wintypes.BOOL,
+            ctypes.wintypes.DWORD
+        ]
+        kernel32.OpenProcess.restype = ctypes.wintypes.HANDLE
+        kernel32.QueryFullProcessImageNameW.argtypes = [
+            ctypes.wintypes.HANDLE,
+            ctypes.wintypes.DWORD,
+            ctypes.wintypes.LPWSTR,
+            ctypes.POINTER(ctypes.wintypes.DWORD)
+        ]
+        kernel32.QueryFullProcessImageNameW.restype = ctypes.wintypes.BOOL
+        kernel32.CloseHandle.argtypes = [ctypes.wintypes.HANDLE]
+        kernel32.CloseHandle.restype = ctypes.wintypes.BOOL
+    except Exception:
+        pass
+
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -79,7 +128,7 @@ ICON_PATH = get_resource_path("Logo2AIR.png")
 ICON_ICO_PATH = get_resource_path("Logo2AIR.ico")
 
 APP_NAME = "AutoInputR"
-APP_VERSION = "1.2.3.1"
+APP_VERSION = "1.3.0"
 TRACKER_TEMPLATE_FILE = CONFIG_DIR / "tracker_template.png"
 
 class AutoInputR(ctk.CTk):
@@ -93,6 +142,7 @@ class AutoInputR(ctk.CTk):
         self.app_icon_photo = None
         self.header_icon_image = None
         self.window_icon_image = None
+        self.window_selector_icon_image = None
         self.load_app_assets()
 
         self.window_width = 600
@@ -112,6 +162,31 @@ class AutoInputR(ctk.CTk):
 
         self.keep_on_top = self.config.get("keep_on_top", True)
         self.turbo_mode = self.config.get("turbo_mode", False)
+
+        # Ventana objetivo (AutoInputR v1.3)
+        self.target_window_title = str(
+            self.config.get("target_window_title", "") or ""
+        )
+        self.target_window_process = str(
+            self.config.get("target_window_process", "") or ""
+        )
+        self.target_window_class = str(
+            self.config.get("target_window_class", "") or ""
+        )
+        self.target_window_focus_only = bool(
+            self.config.get("target_window_focus_only", True)
+        )
+        self.target_window_auto_resume = bool(
+            self.config.get("target_window_auto_resume", True)
+        )
+        self.target_window_hwnd = 0
+        self.target_window_last_resolve_attempt = 0.0
+        self.target_window_state_code = "none"
+        self.target_window_state_text = "Sin ventana objetivo"
+        self.target_window_paused_modules = set()
+        self.target_window_stop_scheduled = set()
+        self.available_target_windows = []
+        self.target_window_label_map = {}
 
         # Preparación para futura función de autoclick
         self.click_hours = self.config.get("click_hours", "0")
@@ -346,6 +421,18 @@ class AutoInputR(ctk.CTk):
 
         self.settings_window = None
         self.general_settings_window = None
+        self.window_selector_window = None
+
+        self.window_selector_button = None
+        self.window_selector_option = None
+        self.window_selector_status_label = None
+        self.window_selector_focus_checkbox = None
+        self.window_selector_auto_resume_checkbox = None
+
+        self.general_target_window_option = None
+        self.general_target_window_status_label = None
+        self.general_target_focus_checkbox = None
+        self.general_target_auto_resume_checkbox = None
 
         self.general_keep_on_top_checkbox = None
 
@@ -401,7 +488,9 @@ class AutoInputR(ctk.CTk):
         self.load_saved_area()
         self.load_saved_tracker_area()
         self.load_saved_tracker_template()
+        self.resolve_saved_target_window()
         self.start_keyboard_listener()
+        self.after(350, self.refresh_target_window_state_loop)
 
         self.movement_thread = threading.Thread(
             target=self.movement_loop,
@@ -469,6 +558,26 @@ class AutoInputR(ctk.CTk):
                 )
         except Exception:
             self.header_icon_image = None
+
+        try:
+            monitor_icon = Image.new("RGBA", (28, 28), (0, 0, 0, 0))
+            draw = ImageDraw.Draw(monitor_icon)
+            draw.rounded_rectangle(
+                (3, 4, 25, 19),
+                radius=2,
+                outline=(205, 214, 244, 255),
+                width=2
+            )
+            draw.line((14, 19, 14, 23), fill=(205, 214, 244, 255), width=2)
+            draw.line((9, 24, 19, 24), fill=(205, 214, 244, 255), width=2)
+
+            self.window_selector_icon_image = ctk.CTkImage(
+                light_image=monitor_icon,
+                dark_image=monitor_icon,
+                size=(24, 24)
+            )
+        except Exception:
+            self.window_selector_icon_image = None
     
     
     def apply_icon_to_window(self, window):
@@ -766,6 +875,19 @@ class AutoInputR(ctk.CTk):
             command=self.open_settings_window
         )
         settings_button.pack(side="right")
+
+        self.window_selector_button = ctk.CTkButton(
+            general_frame,
+            text="" if self.window_selector_icon_image is not None else "▣",
+            image=self.window_selector_icon_image,
+            width=42,
+            height=36,
+            fg_color="#45475a",
+            hover_color="#585b70",
+            font=ctk.CTkFont(size=18, weight="bold"),
+            command=self.open_window_selector
+        )
+        self.window_selector_button.pack(side="right", padx=(0, 8))
 
     def create_click_section(self, parent):
         # Intervalo de click
@@ -1587,6 +1709,914 @@ class AutoInputR(ctk.CTk):
         self.tracker_status_label.pack(side="right")
 
 
+    # ------------------------------------------------------------------
+    # Ventana objetivo (AutoInputR v1.3)
+    # ------------------------------------------------------------------
+    def has_target_window(self):
+        return bool(
+            self.target_window_title
+            or self.target_window_process
+            or self.target_window_class
+        )
+
+    def get_process_name_from_pid(self, pid):
+        if sys.platform != "win32" or not pid:
+            return ""
+
+        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+        kernel32 = ctypes.windll.kernel32
+
+        handle = kernel32.OpenProcess(
+            PROCESS_QUERY_LIMITED_INFORMATION,
+            False,
+            int(pid)
+        )
+
+        if not handle:
+            return ""
+
+        try:
+            buffer = ctypes.create_unicode_buffer(1024)
+            size = ctypes.wintypes.DWORD(len(buffer))
+
+            ok = kernel32.QueryFullProcessImageNameW(
+                handle,
+                0,
+                buffer,
+                ctypes.byref(size)
+            )
+
+            if not ok:
+                return ""
+
+            return Path(buffer.value).name
+        except Exception:
+            return ""
+        finally:
+            try:
+                kernel32.CloseHandle(handle)
+            except Exception:
+                pass
+
+    def get_window_info(self, hwnd):
+        if sys.platform != "win32" or not hwnd:
+            return None
+
+        try:
+            user32 = ctypes.windll.user32
+
+            if not user32.IsWindow(int(hwnd)):
+                return None
+
+            title_length = user32.GetWindowTextLengthW(int(hwnd))
+            title_buffer = ctypes.create_unicode_buffer(max(1, title_length + 1))
+            user32.GetWindowTextW(int(hwnd), title_buffer, len(title_buffer))
+            title = title_buffer.value.strip()
+
+            class_buffer = ctypes.create_unicode_buffer(256)
+            user32.GetClassNameW(int(hwnd), class_buffer, len(class_buffer))
+            class_name = class_buffer.value.strip()
+
+            pid = ctypes.wintypes.DWORD()
+            user32.GetWindowThreadProcessId(int(hwnd), ctypes.byref(pid))
+            process_name = self.get_process_name_from_pid(pid.value)
+
+            return {
+                "hwnd": int(hwnd),
+                "title": title,
+                "process": process_name,
+                "class": class_name,
+                "pid": int(pid.value)
+            }
+        except Exception:
+            return None
+
+    def enumerate_target_windows(self):
+        if sys.platform != "win32":
+            self.available_target_windows = []
+            self.target_window_label_map = {}
+            return []
+
+        user32 = ctypes.windll.user32
+        windows = []
+        own_pid = os.getpid()
+
+        WNDENUMPROC = ctypes.WINFUNCTYPE(
+            ctypes.c_bool,
+            ctypes.wintypes.HWND,
+            ctypes.wintypes.LPARAM
+        )
+
+        @WNDENUMPROC
+        def enum_callback(hwnd, _lparam):
+            try:
+                if not user32.IsWindowVisible(hwnd):
+                    return True
+
+                info = self.get_window_info(hwnd)
+
+                if not info:
+                    return True
+
+                if info["pid"] == own_pid:
+                    return True
+
+                title = info["title"].strip()
+
+                if not title or title == "Program Manager":
+                    return True
+
+                windows.append(info)
+            except Exception:
+                pass
+
+            return True
+
+        try:
+            user32.EnumWindows(enum_callback, 0)
+        except Exception:
+            windows = []
+
+        windows.sort(
+            key=lambda item: (
+                item.get("process", "").lower(),
+                item.get("title", "").lower()
+            )
+        )
+
+        label_map = {}
+
+        for info in windows:
+            title = info.get("title", "Ventana")
+            process_name = info.get("process", "") or "Proceso desconocido"
+
+            if len(title) > 58:
+                title = title[:55] + "..."
+
+            base_label = f"{title}  ·  {process_name}"
+            label = base_label
+
+            if label in label_map:
+                label = f"{base_label}  [{info['hwnd']}]"
+
+            info["label"] = label
+            label_map[label] = info
+
+        self.available_target_windows = windows
+        self.target_window_label_map = label_map
+        return windows
+
+    def target_window_matches(self, info):
+        if not info or not self.has_target_window():
+            return False
+
+        saved_process = self.target_window_process.lower().strip()
+        saved_class = self.target_window_class.lower().strip()
+        saved_title = self.target_window_title.strip()
+
+        current_process = str(info.get("process", "")).lower().strip()
+        current_class = str(info.get("class", "")).lower().strip()
+        current_title = str(info.get("title", "")).strip()
+
+        if saved_process and saved_class:
+            if saved_process == current_process and saved_class == current_class:
+                if not saved_title or saved_title == current_title:
+                    return True
+
+        if saved_process and saved_title:
+            if saved_process == current_process and saved_title == current_title:
+                return True
+
+        if saved_title and saved_title == current_title:
+            return True
+
+        return False
+
+    def resolve_saved_target_window(self, force=False):
+        if not self.has_target_window():
+            self.target_window_hwnd = 0
+            return 0
+
+        try:
+            if sys.platform == "win32" and self.target_window_hwnd:
+                if ctypes.windll.user32.IsWindow(int(self.target_window_hwnd)):
+                    info = self.get_window_info(self.target_window_hwnd)
+
+                    if self.target_window_matches(info):
+                        return int(self.target_window_hwnd)
+        except Exception:
+            pass
+
+        self.target_window_hwnd = 0
+
+        now = time.perf_counter()
+
+        if (
+            not force
+            and now - self.target_window_last_resolve_attempt < 1.0
+        ):
+            return 0
+
+        self.target_window_last_resolve_attempt = now
+        windows = self.enumerate_target_windows()
+
+        # Coincidencia exacta primero.
+        for info in windows:
+            if self.target_window_matches(info):
+                self.target_window_hwnd = int(info["hwnd"])
+                return self.target_window_hwnd
+
+        # Si el título cambió, intenta recuperar por proceso + clase.
+        saved_process = self.target_window_process.lower().strip()
+        saved_class = self.target_window_class.lower().strip()
+
+        if saved_process and saved_class:
+            for info in windows:
+                if (
+                    str(info.get("process", "")).lower().strip() == saved_process
+                    and str(info.get("class", "")).lower().strip() == saved_class
+                ):
+                    self.target_window_hwnd = int(info["hwnd"])
+                    self.target_window_title = str(info.get("title", ""))
+                    return self.target_window_hwnd
+
+        return 0
+
+    def set_target_window(self, info, status_message=True):
+        if not info:
+            return
+
+        self.target_window_hwnd = int(info.get("hwnd", 0) or 0)
+        self.target_window_last_resolve_attempt = time.perf_counter()
+        self.target_window_title = str(info.get("title", "") or "")
+        self.target_window_process = str(info.get("process", "") or "")
+        self.target_window_class = str(info.get("class", "") or "")
+        self.target_window_paused_modules.clear()
+        self.target_window_stop_scheduled.clear()
+
+        self.save_config()
+        self.refresh_target_window_controls()
+        self.refresh_target_window_state()
+
+        if status_message:
+            self.set_general_status(
+                f"Ventana objetivo: {self.get_target_window_display_name()}",
+                "#a6e3a1"
+            )
+
+    def clear_target_window(self):
+        self.target_window_hwnd = 0
+        self.target_window_last_resolve_attempt = 0.0
+        self.target_window_title = ""
+        self.target_window_process = ""
+        self.target_window_class = ""
+        self.target_window_paused_modules.clear()
+        self.target_window_stop_scheduled.clear()
+
+        self.save_config()
+        self.refresh_target_window_controls()
+        self.refresh_target_window_state()
+        self.set_general_status("Ventana objetivo eliminada.", "#f9e2af")
+
+    def get_target_window_display_name(self):
+        if not self.has_target_window():
+            return "Sin ventana seleccionada"
+
+        title = self.target_window_title or self.target_window_process
+
+        if len(title) > 42:
+            title = title[:39] + "..."
+
+        return title
+
+    def get_selected_target_label(self):
+        if not self.has_target_window():
+            return "Selecciona una ventana..."
+
+        for label, info in self.target_window_label_map.items():
+            if self.target_window_matches(info):
+                return label
+
+        process_name = self.target_window_process or "Proceso desconocido"
+        return f"{self.get_target_window_display_name()}  ·  {process_name}"
+
+    def get_target_window_state(self):
+        if not self.has_target_window():
+            return True, "none", "Sin ventana objetivo"
+
+        if sys.platform != "win32":
+            return False, "unsupported", "Selector disponible solo en Windows"
+
+        hwnd = self.resolve_saved_target_window()
+
+        if not hwnd:
+            return False, "unavailable", "Ventana objetivo no disponible"
+
+        try:
+            user32 = ctypes.windll.user32
+
+            if user32.IsIconic(int(hwnd)):
+                return False, "minimized", "Ventana objetivo minimizada"
+
+            if self.target_window_focus_only:
+                foreground = int(user32.GetForegroundWindow() or 0)
+
+                if foreground != int(hwnd):
+                    return False, "inactive", "Ventana objetivo sin foco"
+
+                return True, "active", "Ventana objetivo activa"
+
+            return True, "available", "Protección por foco desactivada"
+        except Exception:
+            return False, "unavailable", "No se pudo comprobar la ventana"
+
+    def refresh_target_window_state(self):
+        ready, state_code, state_text = self.get_target_window_state()
+        self.target_window_state_code = state_code
+        self.target_window_state_text = state_text
+
+        button = self.window_selector_button
+
+        if button is not None:
+            try:
+                if state_code == "none":
+                    button.configure(
+                        fg_color="#45475a",
+                        hover_color="#585b70",
+                        text_color="white"
+                    )
+                elif state_code == "available":
+                    button.configure(
+                        fg_color="#1f6aa5",
+                        hover_color="#2f7db7",
+                        text_color="white"
+                    )
+                elif ready:
+                    button.configure(
+                        fg_color="#a6e3a1",
+                        hover_color="#94d89a",
+                        text_color="black"
+                    )
+                elif state_code in {"inactive", "minimized"}:
+                    button.configure(
+                        fg_color="#f9e2af",
+                        hover_color="#eed49f",
+                        text_color="black"
+                    )
+                else:
+                    button.configure(
+                        fg_color="#f38ba8",
+                        hover_color="#eba0ac",
+                        text_color="black"
+                    )
+            except Exception:
+                pass
+
+        status_text = state_text
+
+        if self.has_target_window():
+            status_text = f"{self.get_target_window_display_name()} · {state_text}"
+
+        for label in [
+            self.window_selector_status_label,
+            self.general_target_window_status_label
+        ]:
+            try:
+                if label is not None:
+                    label.configure(
+                        text=status_text,
+                        text_color=(
+                            "#a6e3a1" if ready and state_code != "none"
+                            else "#a6adc8" if state_code == "none"
+                            else "#f9e2af" if state_code in {"inactive", "minimized"}
+                            else "#f38ba8"
+                        )
+                    )
+            except Exception:
+                pass
+
+        return ready
+
+    def refresh_target_window_state_loop(self):
+        if self.stop_thread:
+            return
+
+        self.refresh_target_window_state()
+
+        try:
+            self.after(500, self.refresh_target_window_state_loop)
+        except Exception:
+            pass
+
+    def refresh_target_window_list(self):
+        self.enumerate_target_windows()
+        values = list(self.target_window_label_map.keys())
+
+        if not values:
+            values = ["No hay ventanas visibles disponibles"]
+
+        selected_label = self.get_selected_target_label()
+
+        for option in [
+            self.window_selector_option,
+            self.general_target_window_option
+        ]:
+            try:
+                if option is not None:
+                    option.configure(values=values)
+                    option.set(selected_label)
+            except Exception:
+                pass
+
+        self.refresh_target_window_state()
+
+    def refresh_target_window_controls(self):
+        self.refresh_target_window_list()
+
+        self.set_checkbox_state(
+            self.window_selector_focus_checkbox,
+            self.target_window_focus_only
+        )
+        self.set_checkbox_state(
+            self.window_selector_auto_resume_checkbox,
+            self.target_window_auto_resume
+        )
+        self.set_checkbox_state(
+            self.general_target_focus_checkbox,
+            self.target_window_focus_only
+        )
+        self.set_checkbox_state(
+            self.general_target_auto_resume_checkbox,
+            self.target_window_auto_resume
+        )
+
+    def choose_target_window_from_label(self, selected_label):
+        info = self.target_window_label_map.get(selected_label)
+
+        if info is None:
+            return
+
+        self.set_target_window(info)
+
+    def toggle_target_focus_only(self):
+        checkbox = (
+            self.window_selector_focus_checkbox
+            if self.window_selector_focus_checkbox is not None
+            else self.general_target_focus_checkbox
+        )
+
+        if checkbox is None:
+            return
+
+        self.target_window_focus_only = bool(checkbox.get())
+        self.target_window_paused_modules.clear()
+        self.target_window_stop_scheduled.clear()
+        self.save_config()
+        self.refresh_target_window_controls()
+        self.set_general_status("Protección por foco actualizada.", "#a6e3a1")
+
+    def toggle_target_auto_resume(self):
+        checkbox = (
+            self.window_selector_auto_resume_checkbox
+            if self.window_selector_auto_resume_checkbox is not None
+            else self.general_target_auto_resume_checkbox
+        )
+
+        if checkbox is None:
+            return
+
+        self.target_window_auto_resume = bool(checkbox.get())
+        self.target_window_paused_modules.clear()
+        self.target_window_stop_scheduled.clear()
+        self.save_config()
+        self.refresh_target_window_controls()
+        self.set_general_status("Reanudación automática actualizada.", "#a6e3a1")
+
+    def capture_foreground_target_window(self):
+        if sys.platform != "win32":
+            self.set_general_status("Esta función solo está disponible en Windows.", "#f38ba8")
+            return
+
+        selector = self.window_selector_window
+        general = self.general_settings_window
+
+        try:
+            if selector is not None:
+                selector.grab_release()
+                selector.withdraw()
+        except Exception:
+            pass
+
+        try:
+            if general is not None:
+                general.grab_release()
+                general.withdraw()
+        except Exception:
+            pass
+
+        try:
+            self.attributes("-topmost", False)
+            self.withdraw()
+        except Exception:
+            pass
+
+        def capture_now():
+            info = None
+
+            try:
+                hwnd = int(ctypes.windll.user32.GetForegroundWindow() or 0)
+                info = self.get_window_info(hwnd)
+
+                if info and info.get("pid") == os.getpid():
+                    info = None
+            except Exception:
+                info = None
+
+            try:
+                self.deiconify()
+                self.attributes("-topmost", self.keep_on_top)
+                self.lift()
+            except Exception:
+                pass
+
+            try:
+                if selector is not None and selector.winfo_exists():
+                    selector.deiconify()
+                    selector.grab_set()
+                    selector.lift()
+                    selector.focus_force()
+            except Exception:
+                pass
+
+            try:
+                if general is not None and general.winfo_exists():
+                    general.deiconify()
+                    general.grab_set()
+                    general.lift()
+                    general.focus_force()
+            except Exception:
+                pass
+
+            if info and info.get("title"):
+                self.set_target_window(info)
+            else:
+                self.set_general_status(
+                    "No se pudo capturar una ventana externa.",
+                    "#f38ba8"
+                )
+
+        self.after(2500, capture_now)
+
+    def open_window_selector(self):
+        if self.window_selector_window is not None:
+            try:
+                self.window_selector_window.lift()
+                self.window_selector_window.focus_force()
+            except Exception:
+                pass
+            return
+
+        window_width = 560
+        window_height = 330
+
+        window = ctk.CTkToplevel(self)
+        self.window_selector_window = window
+        self.apply_icon_to_window(window)
+
+        window.title(f"Ventana objetivo - {APP_NAME}")
+        window.geometry(f"{window_width}x{window_height}")
+        window.resizable(False, False)
+        window.configure(fg_color="#242424")
+        window.transient(self)
+        window.grab_set()
+        window.attributes("-topmost", self.keep_on_top)
+
+        title = ctk.CTkLabel(
+            window,
+            text="Ventana objetivo",
+            font=ctk.CTkFont(size=22, weight="bold")
+        )
+        title.pack(pady=(22, 6))
+
+        info = ctk.CTkLabel(
+            window,
+            text="AutoInputR pausará sus acciones cuando la ventana seleccionada no tenga el foco.",
+            text_color="#a6adc8",
+            wraplength=500,
+            justify="center"
+        )
+        info.pack(pady=(0, 12))
+
+        self.window_selector_option = ctk.CTkOptionMenu(
+            window,
+            values=["Cargando ventanas..."],
+            width=500,
+            height=36,
+            command=self.choose_target_window_from_label
+        )
+        self.window_selector_option.pack(padx=28, pady=(0, 10), fill="x")
+
+        actions = ctk.CTkFrame(window, fg_color="transparent")
+        actions.pack(padx=28, pady=(0, 10), fill="x")
+
+        refresh_button = ctk.CTkButton(
+            actions,
+            text="Actualizar",
+            height=34,
+            command=self.refresh_target_window_list
+        )
+        refresh_button.grid(row=0, column=0, padx=(0, 6), sticky="ew")
+
+        focused_button = ctk.CTkButton(
+            actions,
+            text="Usar ventana enfocada",
+            height=34,
+            command=self.capture_foreground_target_window
+        )
+        focused_button.grid(row=0, column=1, padx=6, sticky="ew")
+
+        clear_button = ctk.CTkButton(
+            actions,
+            text="Limpiar",
+            height=34,
+            fg_color="#45475a",
+            hover_color="#585b70",
+            command=self.clear_target_window
+        )
+        clear_button.grid(row=0, column=2, padx=(6, 0), sticky="ew")
+
+        actions.grid_columnconfigure(0, weight=1)
+        actions.grid_columnconfigure(1, weight=1)
+        actions.grid_columnconfigure(2, weight=1)
+
+        self.window_selector_focus_checkbox = ctk.CTkCheckBox(
+            window,
+            text="Pausar automatizaciones si la ventana pierde el foco",
+            command=self.toggle_target_focus_only
+        )
+        self.window_selector_focus_checkbox.pack(anchor="w", padx=30, pady=(0, 8))
+
+        self.window_selector_auto_resume_checkbox = ctk.CTkCheckBox(
+            window,
+            text="Reanudar automáticamente al recuperar el foco",
+            command=self.toggle_target_auto_resume
+        )
+        self.window_selector_auto_resume_checkbox.pack(anchor="w", padx=30, pady=(0, 10))
+
+        self.window_selector_status_label = ctk.CTkLabel(
+            window,
+            text="",
+            text_color="#a6adc8",
+            wraplength=500
+        )
+        self.window_selector_status_label.pack(pady=(0, 8))
+
+        close_button = ctk.CTkButton(
+            window,
+            text="Cerrar",
+            width=130,
+            height=34,
+            command=self.close_window_selector
+        )
+        close_button.pack(pady=(0, 14))
+
+        window.protocol("WM_DELETE_WINDOW", self.close_window_selector)
+
+        self.center_window(
+            window,
+            window_width,
+            window_height,
+            self.center_offset_x,
+            self.center_offset_y
+        )
+
+        self.refresh_target_window_controls()
+        window.after(100, window.lift)
+        window.after(100, window.focus_force)
+
+    def close_window_selector(self):
+        window = self.window_selector_window
+        self.window_selector_window = None
+
+        if window is not None:
+            try:
+                window.grab_release()
+            except Exception:
+                pass
+
+            try:
+                window.destroy()
+            except Exception:
+                pass
+
+        self.window_selector_option = None
+        self.window_selector_status_label = None
+        self.window_selector_focus_checkbox = None
+        self.window_selector_auto_resume_checkbox = None
+
+        try:
+            self.lift()
+            self.focus_force()
+        except Exception:
+            pass
+
+    def create_target_window_settings_section(self, parent):
+        target_frame = ctk.CTkFrame(parent, corner_radius=12)
+        target_frame.pack(padx=10, pady=8, fill="x")
+
+        title = ctk.CTkLabel(
+            target_frame,
+            text="Ventana objetivo",
+            font=ctk.CTkFont(size=16, weight="bold")
+        )
+        title.pack(anchor="w", padx=14, pady=(10, 8))
+
+        self.general_target_window_option = ctk.CTkOptionMenu(
+            target_frame,
+            values=["Cargando ventanas..."],
+            command=self.choose_target_window_from_label
+        )
+        self.general_target_window_option.pack(
+            padx=14,
+            pady=(0, 8),
+            fill="x"
+        )
+
+        actions = ctk.CTkFrame(target_frame, fg_color="transparent")
+        actions.pack(padx=14, pady=(0, 8), fill="x")
+
+        refresh_button = ctk.CTkButton(
+            actions,
+            text="Actualizar",
+            height=31,
+            command=self.refresh_target_window_list
+        )
+        refresh_button.grid(row=0, column=0, padx=(0, 5), sticky="ew")
+
+        focused_button = ctk.CTkButton(
+            actions,
+            text="Usar enfocada",
+            height=31,
+            command=self.capture_foreground_target_window
+        )
+        focused_button.grid(row=0, column=1, padx=5, sticky="ew")
+
+        clear_button = ctk.CTkButton(
+            actions,
+            text="Limpiar",
+            height=31,
+            fg_color="#45475a",
+            hover_color="#585b70",
+            command=self.clear_target_window
+        )
+        clear_button.grid(row=0, column=2, padx=(5, 0), sticky="ew")
+
+        actions.grid_columnconfigure(0, weight=1)
+        actions.grid_columnconfigure(1, weight=1)
+        actions.grid_columnconfigure(2, weight=1)
+
+        self.general_target_focus_checkbox = ctk.CTkCheckBox(
+            target_frame,
+            text="Pausar si la ventana pierde el foco",
+            command=self.toggle_target_focus_only
+        )
+        self.general_target_focus_checkbox.pack(
+            anchor="w",
+            padx=14,
+            pady=(0, 7)
+        )
+
+        self.general_target_auto_resume_checkbox = ctk.CTkCheckBox(
+            target_frame,
+            text="Reanudar al recuperar el foco",
+            command=self.toggle_target_auto_resume
+        )
+        self.general_target_auto_resume_checkbox.pack(
+            anchor="w",
+            padx=14,
+            pady=(0, 7)
+        )
+
+        self.general_target_window_status_label = ctk.CTkLabel(
+            target_frame,
+            text="",
+            text_color="#a6adc8",
+            font=ctk.CTkFont(size=12),
+            wraplength=420,
+            justify="left"
+        )
+        self.general_target_window_status_label.pack(
+            anchor="w",
+            padx=14,
+            pady=(0, 12)
+        )
+
+        self.refresh_target_window_controls()
+
+    def get_target_pause_reason(self):
+        _ready, state_code, state_text = self.get_target_window_state()
+
+        if state_code == "inactive":
+            return f"activa {self.get_target_window_display_name()}"
+        if state_code == "minimized":
+            return "restaura la ventana objetivo"
+        if state_code == "unavailable":
+            return "abre la ventana objetivo"
+
+        return state_text.lower()
+
+    def update_module_window_pause_status(self, module_name, stopped=False):
+        prefix = "Detenido" if stopped else "Pausado"
+        reason = self.get_target_pause_reason()
+        text = f"Estado: {prefix} · {reason}"
+        color = "#f38ba8" if stopped else "#f9e2af"
+
+        if module_name == "movement":
+            self.update_status(text, color)
+            self.update_speed_label(0)
+        elif module_name == "click":
+            self.update_click_status(text, color)
+            self.update_click_speed_label(0)
+        elif module_name == "press":
+            self.update_press_status(text, color)
+            self.update_press_speed_label(0)
+        elif module_name == "route":
+            self.update_route_status(text, color)
+            self.update_route_play_speed_label(0)
+        elif module_name == "tracker":
+            self.update_tracker_status(text, color)
+            self.update_tracker_speed_label(0)
+
+    def update_module_window_resume_status(self, module_name):
+        if module_name == "movement" and self.running:
+            self.update_status("Estado: Moviendo cursor", "#a6e3a1")
+        elif module_name == "click" and self.click_running:
+            self.update_click_status("Estado: Ejecutando clicks", "#a6e3a1")
+        elif module_name == "press" and self.press_running:
+            self.update_press_status("Estado: Presionando tecla", "#a6e3a1")
+        elif module_name == "route" and self.route_running:
+            self.update_route_status("Estado: Reproduciendo ruta", "#a6e3a1")
+        elif module_name == "tracker" and self.tracker_running:
+            self.update_tracker_status("Estado: Buscando objetivo", "#a6e3a1")
+
+    def stop_module_for_target_window(self, module_name):
+        if module_name == "movement":
+            self.stop_movement()
+        elif module_name == "click":
+            self.stop_clicking()
+        elif module_name == "press":
+            self.stop_pressing()
+        elif module_name == "route":
+            self.stop_route()
+        elif module_name == "tracker":
+            self.stop_tracker()
+
+        self.update_module_window_pause_status(module_name, stopped=True)
+        self.target_window_stop_scheduled.discard(module_name)
+
+    def can_execute_for_target_window(self, module_name):
+        if not self.has_target_window() or not self.target_window_focus_only:
+            if module_name in self.target_window_paused_modules:
+                self.target_window_paused_modules.discard(module_name)
+                self.after(
+                    0,
+                    lambda name=module_name: self.update_module_window_resume_status(name)
+                )
+            return True
+
+        ready, _state_code, _state_text = self.get_target_window_state()
+
+        if ready:
+            self.target_window_stop_scheduled.discard(module_name)
+
+            if module_name in self.target_window_paused_modules:
+                self.target_window_paused_modules.discard(module_name)
+                self.after(
+                    0,
+                    lambda name=module_name: self.update_module_window_resume_status(name)
+                )
+
+            return True
+
+        if self.target_window_auto_resume:
+            if module_name not in self.target_window_paused_modules:
+                self.target_window_paused_modules.add(module_name)
+                self.after(
+                    0,
+                    lambda name=module_name: self.update_module_window_pause_status(name)
+                )
+
+            return False
+
+        if module_name not in self.target_window_stop_scheduled:
+            self.target_window_stop_scheduled.add(module_name)
+            self.after(
+                0,
+                lambda name=module_name: self.stop_module_for_target_window(name)
+            )
+
+        return False
+
     def center_window(self, window, width, height, offset_x=0, offset_y=0):
         window.update_idletasks()
 
@@ -1646,6 +2676,13 @@ class AutoInputR(ctk.CTk):
                 "center_offset_y": self.center_offset_y,
                 "keep_on_top": self.keep_on_top,
                 "turbo_mode": self.turbo_mode,
+
+                "target_window_title": self.target_window_title,
+                "target_window_process": self.target_window_process,
+                "target_window_class": self.target_window_class,
+                "target_window_focus_only": self.target_window_focus_only,
+                "target_window_auto_resume": self.target_window_auto_resume,
+
                 "movement_mode": self.movement_mode,
                 "movement_speed": self.movement_speed,
                 "movement_smooth_enabled": self.movement_smooth_enabled,
@@ -3568,6 +4605,8 @@ class AutoInputR(ctk.CTk):
 
     def stop_movement(self):
         self.running = False
+        self.target_window_paused_modules.discard("movement")
+        self.target_window_stop_scheduled.discard("movement")
         self.update_status("Estado: Detenido", "#a6adc8")
         self.update_speed_label(0)
 
@@ -3714,6 +4753,8 @@ class AutoInputR(ctk.CTk):
 
     def stop_route(self):
         self.route_running = False
+        self.target_window_paused_modules.discard("route")
+        self.target_window_stop_scheduled.discard("route")
 
         if self.record_route_button is not None:
             self.record_route_button.configure(state="normal")
@@ -3802,6 +4843,8 @@ class AutoInputR(ctk.CTk):
 
     def stop_pressing(self):
         self.press_running = False
+        self.target_window_paused_modules.discard("press")
+        self.target_window_stop_scheduled.discard("press")
 
         if hasattr(self, "press_key_button"):
             self.press_key_button.configure(state="normal")
@@ -3862,6 +4905,8 @@ class AutoInputR(ctk.CTk):
 
     def stop_clicking(self):
         self.click_running = False
+        self.target_window_paused_modules.discard("click")
+        self.target_window_stop_scheduled.discard("click")
 
         if hasattr(self, "click_hotkey_button"):
             self.click_hotkey_button.configure(state="normal")
@@ -4059,6 +5104,10 @@ class AutoInputR(ctk.CTk):
     def movement_loop(self):
         while not self.stop_thread:
             if self.running and self.area:
+                if not self.can_execute_for_target_window("movement"):
+                    time.sleep(0.05)
+                    continue
+
                 x, y = self.get_next_position()
 
                 try:
@@ -4114,6 +5163,10 @@ class AutoInputR(ctk.CTk):
     def click_loop(self):
         while not self.stop_thread:
             if self.click_running:
+                if not self.can_execute_for_target_window("click"):
+                    time.sleep(0.05)
+                    continue
+
                 button = self.get_click_button_name()
                 click_amount = self.get_click_amount()
                 x, y = self.get_click_position()
@@ -4190,6 +5243,10 @@ class AutoInputR(ctk.CTk):
     def press_loop(self):
         while not self.stop_thread:
             if self.press_running:
+                if not self.can_execute_for_target_window("press"):
+                    time.sleep(0.05)
+                    continue
+
                 repeat_mode = self.press_repeat_var.get()
                 repeat_limit = int(self.press_repeat_entry.get() or 1)
 
@@ -4259,6 +5316,14 @@ class AutoInputR(ctk.CTk):
                 delay = 0.02 / max(1, self.route_speed_multiplier)
 
                 for event in events:
+                    if not self.route_running or self.stop_thread:
+                        break
+
+                    while self.route_running and not self.stop_thread:
+                        if self.can_execute_for_target_window("route"):
+                            break
+                        time.sleep(0.05)
+
                     if not self.route_running or self.stop_thread:
                         break
 
@@ -4433,6 +5498,8 @@ class AutoInputR(ctk.CTk):
 
     def stop_tracker(self):
         self.tracker_running = False
+        self.target_window_paused_modules.discard("tracker")
+        self.target_window_stop_scheduled.discard("tracker")
         self.tracker_next_random_click_time = 0
 
         self.update_tracker_status("Estado: Rastreador detenido", "#a6adc8")
@@ -4605,6 +5672,10 @@ class AutoInputR(ctk.CTk):
         with mss.MSS() as sct:
             while not self.stop_thread:
                 if self.tracker_running and self.tracker_area and self.tracker_template is not None:
+                    if not self.can_execute_for_target_window("tracker"):
+                        time.sleep(0.05)
+                        continue
+
                     try:
                         x1, y1, x2, y2 = self.tracker_area
 
@@ -6273,6 +7344,9 @@ class AutoInputR(ctk.CTk):
         if self.keep_on_top:
             self.general_keep_on_top_checkbox.select()
 
+        # Ventana objetivo
+        self.create_target_window_settings_section(content)
+
         # Modos Turbo
         turbo_frame = ctk.CTkFrame(content, corner_radius=12)
         turbo_frame.pack(padx=10, pady=8, fill="x")
@@ -6752,6 +7826,11 @@ class AutoInputR(ctk.CTk):
 
         self.general_keep_on_top_checkbox = None
 
+        self.general_target_window_option = None
+        self.general_target_window_status_label = None
+        self.general_target_focus_checkbox = None
+        self.general_target_auto_resume_checkbox = None
+
         self.general_click_turbo_checkbox = None
         self.general_press_turbo_checkbox = None
         self.general_movement_turbo_checkbox = None
@@ -6905,6 +7984,25 @@ class AutoInputR(ctk.CTk):
             self.general_keep_on_top_checkbox,
             self.keep_on_top
         )
+
+        self.set_checkbox_state(
+            self.general_target_focus_checkbox,
+            self.target_window_focus_only
+        )
+        self.set_checkbox_state(
+            self.general_target_auto_resume_checkbox,
+            self.target_window_auto_resume
+        )
+
+        try:
+            if self.general_target_window_option is not None:
+                self.general_target_window_option.set(
+                    self.get_selected_target_label()
+                )
+        except Exception:
+            pass
+
+        self.refresh_target_window_state()
 
         self.set_checkbox_state(
             self.general_click_turbo_checkbox,
@@ -7234,6 +8332,7 @@ class AutoInputR(ctk.CTk):
         for window in [
             self.settings_window,
             self.general_settings_window,
+            self.window_selector_window,
             self.about_window,
             self.close_dialog,
             self.hotkey_window,
@@ -7299,8 +8398,8 @@ class AutoInputR(ctk.CTk):
                 "Herramienta de escritorio para automatizar\n"
                 "clicks, teclas, movimiento, rutas grabadas y rastreo visual.\n\n"
                 "Permite reproducir caminos del mouse con clicks registrados,\n"
-                "seguir objetivos visuales por plantilla, usar hotkeys configurables\n"
-                "y guardar ajustes localmente."
+                "seguir objetivos visuales por plantilla, usar hotkeys configurables,\n"
+                "limitar la ejecución a una ventana objetivo y guardar ajustes localmente."
             ),
             text_color="#cdd6f4",
             justify="center"
@@ -7688,6 +8787,11 @@ class AutoInputR(ctk.CTk):
         self.tracker_running = False
         self.stop_route_game_listeners()
         self.close_route_game_hud()
+
+        try:
+            self.close_window_selector()
+        except Exception:
+            pass
 
         try:
             if self.hotkey_window is not None:

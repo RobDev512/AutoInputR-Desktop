@@ -5,8 +5,10 @@ Set-Location $ScriptDirectory
 
 Write-Host "Limpiando compilaciones anteriores..."
 
-Remove-Item -Recurse -Force build, dist -ErrorAction SilentlyContinue
-Remove-Item -Force AutoInputR_v1.2.spec -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force ".\build" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force ".\dist" -ErrorAction SilentlyContinue
+Remove-Item -Force ".\AutoInputR_v1.2.spec" -ErrorAction SilentlyContinue
+Remove-Item -Force "..\AutoInputR_v1.2.exe" -ErrorAction SilentlyContinue
 
 Write-Host "Compilando AutoInputR..."
 
@@ -29,7 +31,7 @@ python -m PyInstaller `
     --collect-all pystray `
     AutoInputR.py
 
-Write-Host "Copiando el ejecutable a la carpeta del instalador..."
+Write-Host "Copiando el ejecutable a la carpeta raiz..."
 
 Copy-Item `
     -Force `
@@ -38,5 +40,8 @@ Copy-Item `
 
 Write-Host ""
 Write-Host "Compilacion terminada correctamente."
-Write-Host "Ejecutable:"
-Write-Host "..\AutoInputR_v1.2.exe"
+Write-Host "Ejecutable de PyInstaller:"
+Write-Host "$ScriptDirectory\dist\AutoInputR_v1.2.exe"
+Write-Host ""
+Write-Host "Ejecutable para Inno Setup:"
+Write-Host "$(Resolve-Path '..\AutoInputR_v1.2.exe')"
