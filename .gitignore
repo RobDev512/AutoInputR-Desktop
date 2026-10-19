@@ -20,9 +20,6 @@ env/
 build/
 dist/
 *.spec
-AutoInputR Data/build/
-AutoInputR Data/dist/
-AutoInputR Data/*.spec
 
 # Ejecutables e instaladores generados
 *.exe

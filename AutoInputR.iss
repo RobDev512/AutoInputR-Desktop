@@ -14,7 +14,7 @@ DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir=installer
 OutputBaseFilename={#MyAppName}_Setup_v{#MyAppVersion}
-SetupIconFile=AutoInputR Data\Logo2AIR.ico
+SetupIconFile=Logo2AIR.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 Compression=lzma
 SolidCompression=yes
@@ -29,9 +29,9 @@ Name: "desktopicon"; Description: "Crear acceso directo en el escritorio"; Group
 
 [Files]
 Source: "AutoInputR_v1.2.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "AutoInputR Data\LogoAIR.png"; DestDir: "{app}"; Flags: ignoreversion
-Source: "AutoInputR Data\Logo2AIR.png"; DestDir: "{app}"; Flags: ignoreversion
-Source: "AutoInputR Data\Logo2AIR.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "LogoAIR.png"; DestDir: "{app}"; Flags: ignoreversion
+Source: "Logo2AIR.png"; DestDir: "{app}"; Flags: ignoreversion
+Source: "Logo2AIR.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\AutoInputR"; Filename: "{app}\{#MyAppExeName}"
