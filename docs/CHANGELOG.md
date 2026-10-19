@@ -3,6 +3,16 @@
 Los cambios relevantes de AutoInputR se documentan aquí.
 
 ## Unreleased
+
+### Documentación y producto
+
+- Definido AutoInputR como una herramienta de automatización visual y configurable para Windows, sin necesidad de escribir scripts.
+- Añadido `PRODUCT.md` con propósito, público objetivo, principios, casos de uso y límites del proyecto.
+- El uso en juegos queda como un caso secundario, no como la identidad principal del producto.
+- README y ROADMAP alineados con la nueva definición de producto.
+
+### Estructura del repositorio
+
 - Raíz del repositorio simplificada: documentación en `docs/`, dependencias en `requirements/` y datos locales en `data/`.
 - Migración automática del `config.json` y `tracker_template.png` legados hacia `data/`.
 
@@ -24,7 +34,7 @@ Los cambios relevantes de AutoInputR se documentan aquí.
 ### Documentación
 
 - README actualizado para el repositorio `AutoInputR-Desktop`.
-- Añadidos ROADMAP, documentación de arquitectura, desarrollo y checklist de Release.
+- Añadidos ROADMAP, definición de producto, documentación de arquitectura, desarrollo y checklist de Release.
 
 ## v1.3.0
 
