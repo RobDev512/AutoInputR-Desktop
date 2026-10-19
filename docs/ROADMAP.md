@@ -1,6 +1,10 @@
 # Roadmap de AutoInputR
 
-Este roadmap organiza mejoras funcionales y trabajo técnico previsto. Las versiones futuras son una guía y pueden cambiar de orden según pruebas, estabilidad y prioridad.
+AutoInputR se desarrolla como una herramienta de **automatización visual y configurable para Windows, sin necesidad de escribir scripts**. El objetivo es evolucionar desde automatizaciones sencillas de mouse, teclado, rutas y detección visual hacia flujos reutilizables y más expresivos, manteniendo una interfaz comprensible y control directo por parte del usuario.
+
+La definición de producto y los criterios para nuevas funciones se encuentran en [PRODUCT.md](PRODUCT.md).
+
+Este roadmap organiza mejoras funcionales y trabajo técnico previsto. Las versiones futuras son una guía y pueden cambiar de orden según pruebas, estabilidad, utilidad general y prioridad.
 
 ## v1.2.3.1 — Base estable de automatización
 
@@ -19,6 +23,7 @@ Este roadmap organiza mejoras funcionales y trabajo técnico previsto. Las versi
 - Integración con los cinco módulos principales.
 - Refactor técnico posterior a la publicación: paquete `autoinputr/`, módulos funcionales, servicios Win32/entrada/visión, configuración y diálogos separados.
 - Punto de entrada reducido en `AutoInputR.py`.
+- Definición del producto como herramienta general de automatización de escritorio, dejando los juegos como un caso de uso secundario.
 
 ## v1.4.0 — Perfiles y portabilidad
 
@@ -82,9 +87,21 @@ Este roadmap organiza mejoras funcionales y trabajo técnico previsto. Las versi
 - Recuperación ante errores durante automatizaciones largas.
 - Sistema extensible de acciones y plugins.
 
+## Criterios para priorizar funciones
+
+Una función nueva debería aportar valor general al producto y, preferentemente, cumplir estos criterios:
+
+- Resolver una interacción repetitiva real de escritorio.
+- Poder configurarse sin exigir código al usuario.
+- Ser reutilizable en más de una aplicación o escenario.
+- Mantener controles claros para iniciar, detener, simular o diagnosticar la automatización.
+- Encajar en la arquitectura modular actual sin volver a concentrar responsabilidades.
+
+Las funciones diseñadas únicamente alrededor de un juego o aplicación concreta tendrán menor prioridad salvo que puedan generalizarse como capacidad reutilizable.
+
 ## Backlog técnico permanente
 
-- Mantener compatibilidad con `config.json` entre versiones.
+- Mantener compatibilidad de configuración entre versiones.
 - Añadir pruebas automatizadas cuando se separen nuevas responsabilidades.
 - Reducir dependencias directas entre interfaz, automatización y servicios del sistema.
 - Revisar rendimiento de loops y uso de CPU.
