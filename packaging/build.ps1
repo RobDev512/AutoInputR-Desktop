@@ -1,7 +1,9 @@
 $ErrorActionPreference = "Stop"
 
-$ScriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Path
-Set-Location $ScriptDirectory
+$PackagingDirectory = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ProjectRoot = Split-Path -Parent $PackagingDirectory
+
+Set-Location $ProjectRoot
 
 Write-Host "Limpiando compilaciones anteriores..."
 
@@ -18,10 +20,10 @@ python -m PyInstaller `
     --onefile `
     --windowed `
     --name "AutoInputR_v1.2" `
-    --icon "Logo2AIR.ico" `
-    --add-data "LogoAIR.png;." `
-    --add-data "Logo2AIR.png;." `
-    --add-data "Logo2AIR.ico;." `
+    --icon ".\assets\branding\Logo2AIR.ico" `
+    --add-data ".\assets\branding\LogoAIR.png;assets\branding" `
+    --add-data ".\assets\branding\Logo2AIR.png;assets\branding" `
+    --add-data ".\assets\branding\Logo2AIR.ico;assets\branding" `
     --collect-data customtkinter `
     --collect-all cv2 `
     --collect-all mss `
@@ -41,7 +43,7 @@ Copy-Item `
 Write-Host ""
 Write-Host "Compilacion terminada correctamente."
 Write-Host "Ejecutable de PyInstaller:"
-Write-Host "$ScriptDirectory\dist\AutoInputR_v1.2.exe"
+Write-Host "$ProjectRoot\dist\AutoInputR_v1.2.exe"
 Write-Host ""
 Write-Host "Ejecutable para Inno Setup:"
 Write-Host "$(Resolve-Path '.\AutoInputR_v1.2.exe')"

@@ -12,9 +12,9 @@ AppPublisher={#MyAppPublisher}
 DefaultDirName={localappdata}\Programs\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
-OutputDir=installer
+OutputDir=..\installer
 OutputBaseFilename={#MyAppName}_Setup_v{#MyAppVersion}
-SetupIconFile=Logo2AIR.ico
+SetupIconFile=..\assets\branding\Logo2AIR.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 Compression=lzma
 SolidCompression=yes
@@ -28,10 +28,10 @@ Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 Name: "desktopicon"; Description: "Crear acceso directo en el escritorio"; GroupDescription: "Opciones adicionales:"; Flags: unchecked
 
 [Files]
-Source: "AutoInputR_v1.2.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "LogoAIR.png"; DestDir: "{app}"; Flags: ignoreversion
-Source: "Logo2AIR.png"; DestDir: "{app}"; Flags: ignoreversion
-Source: "Logo2AIR.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\AutoInputR_v1.2.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\assets\branding\LogoAIR.png"; DestDir: "{app}\assets\branding"; Flags: ignoreversion
+Source: "..\assets\branding\Logo2AIR.png"; DestDir: "{app}\assets\branding"; Flags: ignoreversion
+Source: "..\assets\branding\Logo2AIR.ico"; DestDir: "{app}\assets\branding"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\AutoInputR"; Filename: "{app}\{#MyAppExeName}"

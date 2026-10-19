@@ -123,9 +123,9 @@ def get_resource_path(filename):
     return local_path
 
 
-LOGO_PATH = get_resource_path("LogoAIR.png")
-ICON_PATH = get_resource_path("Logo2AIR.png")
-ICON_ICO_PATH = get_resource_path("Logo2AIR.ico")
+LOGO_PATH = get_resource_path("assets/branding/LogoAIR.png")
+ICON_PATH = get_resource_path("assets/branding/Logo2AIR.png")
+ICON_ICO_PATH = get_resource_path("assets/branding/Logo2AIR.ico")
 
 APP_NAME = "AutoInputR"
 APP_VERSION = "1.3.0"
