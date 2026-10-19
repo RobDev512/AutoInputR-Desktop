@@ -871,41 +871,6 @@ class AutoInputR(RutaMixin, RastreadorMixin, KeyPresserMixin, ClickerMixin, Move
         except Exception:
             pass
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
-
     def toggle_topmost(self):
         if hasattr(self, "topmost_checkbox"):
             self.set_keep_on_top(bool(self.topmost_checkbox.get()))
