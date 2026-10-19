@@ -1,4 +1,4 @@
-# Desarrollo de AutoInputR
+# Desarrollo de TaskPilot
 
 ## Preparación
 
@@ -14,27 +14,27 @@ python -m pip install -r .\requirements\dev.txt
 ## Ejecutar desde Python
 
 ```powershell
-python .\AutoInputR.py
+python .\TaskPilot.py
 ```
 
 ## Validación mínima después de un cambio
 
 ```powershell
-python -m compileall -q .\AutoInputR.py .\autoinputr
+python -m compileall -q .\TaskPilot.py .\taskpilot
 python -m unittest discover -s .\tests -v
 ```
 
 Después abre la aplicación y prueba manualmente el módulo afectado. Si el cambio toca ventana objetivo o servicios compartidos, prueba también la interacción entre módulos.
 
-## Reglas del refactor
+## Reglas de desarrollo
 
-- No cambiar comportamiento y arquitectura al mismo tiempo salvo que sea necesario.
-- Mantener compatibilidad con `data/config.json` y conservar migración desde el `config.json` legado cuando corresponda.
+- Mantener compatibilidad con `data/config.json` y con la migración desde AutoInputR cuando corresponda.
 - No reintroducir el experimento cancelado de Fusionador.
 - No compilar instalador hasta que la ejecución desde Python sea estable.
-- Mantener `AutoInputR.py` como punto de entrada pequeño.
-- Colocar comportamiento específico del módulo en `autoinputr/modules/`.
-- Colocar integraciones técnicas compartidas en `autoinputr/services/`.
+- Mantener `TaskPilot.py` como punto de entrada pequeño.
+- Colocar comportamiento específico del módulo en `taskpilot/modules/`.
+- Colocar integraciones técnicas compartidas en `taskpilot/services/`.
+- Mantener los nombres históricos AutoInputR únicamente donde documenten versiones anteriores o compatibilidad.
 
 ## Empaquetado
 
@@ -44,4 +44,4 @@ Cuando la versión esté validada desde Python:
 powershell -ExecutionPolicy Bypass -File .\packaging\build.ps1
 ```
 
-Después compila `packaging/AutoInputR.iss` con Inno Setup y sigue `RELEASE-CHECKLIST.md`.
+Después compila `packaging/TaskPilot.iss` con Inno Setup y sigue `RELEASE-CHECKLIST.md`.

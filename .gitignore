@@ -5,7 +5,7 @@ __pycache__/
 *.pyd
 .pytest_cache/
 
-# Configuracion local de AutoInputR
+# Configuracion local de TaskPilot
 data/config.json
 data/tracker_template.png
 data/*.log

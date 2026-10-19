@@ -1,1 +1,0 @@
-"""Nucleo compartido de AutoInputR."""

@@ -2,8 +2,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from autoinputr.core.config import load_config_file, save_config_file
-from autoinputr.core import resources
+from taskpilot.core.config import load_config_file, save_config_file
+from taskpilot.core import resources
 
 
 class ConfigTests(unittest.TestCase):
@@ -14,7 +14,7 @@ class ConfigTests(unittest.TestCase):
             expected = {
                 "enabled": True,
                 "number": 123,
-                "text": "AutoInputR",
+                "text": "TaskPilot",
             }
             self.assertTrue(
                 save_config_file(

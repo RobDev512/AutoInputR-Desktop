@@ -1,1 +1,1 @@
-"""Pruebas de AutoInputR."""
+"""Pruebas de TaskPilot."""

@@ -1,1 +1,0 @@
-"""Modulos funcionales de AutoInputR."""

@@ -8,9 +8,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class ArchitectureTests(unittest.TestCase):
     def test_entry_point_is_small(self):
-        source = (ROOT / "AutoInputR.py").read_text(encoding="utf-8")
+        source = (ROOT / "TaskPilot.py").read_text(encoding="utf-8")
         self.assertLessEqual(len(source.splitlines()), 40)
-        self.assertIn("from autoinputr.app import AutoInputR", source)
+        self.assertIn("from taskpilot.app import TaskPilot", source)
 
     def test_expected_files_exist(self):
         expected = [
@@ -19,22 +19,22 @@ class ArchitectureTests(unittest.TestCase):
             "docs/CHANGELOG.md",
             "requirements/runtime.txt",
             "requirements/dev.txt",
-            "autoinputr/app.py",
-            "autoinputr/core/config.py",
-            "autoinputr/core/hotkeys.py",
-            "autoinputr/core/resources.py",
-            "autoinputr/core/target_window.py",
-            "autoinputr/modules/clicker.py",
-            "autoinputr/modules/keypresser.py",
-            "autoinputr/modules/mover.py",
-            "autoinputr/modules/ruta.py",
-            "autoinputr/modules/rastreador.py",
-            "autoinputr/services/input_backend.py",
-            "autoinputr/services/tray.py",
-            "autoinputr/services/vision.py",
-            "autoinputr/services/windows.py",
-            "autoinputr/ui/dialogs/settings.py",
-            "autoinputr/ui/dialogs/window_selector.py",
+            "taskpilot/app.py",
+            "taskpilot/core/config.py",
+            "taskpilot/core/hotkeys.py",
+            "taskpilot/core/resources.py",
+            "taskpilot/core/target_window.py",
+            "taskpilot/modules/clicker.py",
+            "taskpilot/modules/keypresser.py",
+            "taskpilot/modules/mover.py",
+            "taskpilot/modules/ruta.py",
+            "taskpilot/modules/rastreador.py",
+            "taskpilot/services/input_backend.py",
+            "taskpilot/services/tray.py",
+            "taskpilot/services/vision.py",
+            "taskpilot/services/windows.py",
+            "taskpilot/ui/dialogs/settings.py",
+            "taskpilot/ui/dialogs/window_selector.py",
         ]
         for relative in expected:
             with self.subTest(relative=relative):
@@ -53,12 +53,12 @@ class ArchitectureTests(unittest.TestCase):
 
     def test_app_uses_expected_mixins(self):
         tree = ast.parse(
-            (ROOT / "autoinputr/app.py").read_text(encoding="utf-8")
+            (ROOT / "taskpilot/app.py").read_text(encoding="utf-8")
         )
         app_class = next(
             node
             for node in tree.body
-            if isinstance(node, ast.ClassDef) and node.name == "AutoInputR"
+            if isinstance(node, ast.ClassDef) and node.name == "TaskPilot"
         )
         bases = [ast.unparse(base) for base in app_class.bases]
         for expected in [
@@ -80,18 +80,18 @@ class ArchitectureTests(unittest.TestCase):
 
     def test_method_inventory_has_no_duplicates(self):
         class_files = [
-            ROOT / "autoinputr/app.py",
-            ROOT / "autoinputr/core/hotkeys.py",
-            ROOT / "autoinputr/core/target_window.py",
-            ROOT / "autoinputr/modules/clicker.py",
-            ROOT / "autoinputr/modules/keypresser.py",
-            ROOT / "autoinputr/modules/mover.py",
-            ROOT / "autoinputr/modules/ruta.py",
-            ROOT / "autoinputr/modules/rastreador.py",
-            ROOT / "autoinputr/services/input_backend.py",
-            ROOT / "autoinputr/services/tray.py",
-            ROOT / "autoinputr/ui/dialogs/settings.py",
-            ROOT / "autoinputr/ui/dialogs/window_selector.py",
+            ROOT / "taskpilot/app.py",
+            ROOT / "taskpilot/core/hotkeys.py",
+            ROOT / "taskpilot/core/target_window.py",
+            ROOT / "taskpilot/modules/clicker.py",
+            ROOT / "taskpilot/modules/keypresser.py",
+            ROOT / "taskpilot/modules/mover.py",
+            ROOT / "taskpilot/modules/ruta.py",
+            ROOT / "taskpilot/modules/rastreador.py",
+            ROOT / "taskpilot/services/input_backend.py",
+            ROOT / "taskpilot/services/tray.py",
+            ROOT / "taskpilot/ui/dialogs/settings.py",
+            ROOT / "taskpilot/ui/dialogs/window_selector.py",
         ]
 
         owners = {}
@@ -111,7 +111,7 @@ class ArchitectureTests(unittest.TestCase):
         self.assertEqual(len(owners), 192)
 
     def test_app_self_method_calls_are_resolvable(self):
-        class_files = list((ROOT / "autoinputr").rglob("*.py"))
+        class_files = list((ROOT / "taskpilot").rglob("*.py"))
         methods = set()
         calls = set()
 
@@ -157,7 +157,7 @@ class ArchitectureTests(unittest.TestCase):
 
     def test_fusionador_is_not_present(self):
         hits = []
-        for path in (ROOT / "autoinputr").rglob("*.py"):
+        for path in (ROOT / "taskpilot").rglob("*.py"):
             text = path.read_text(encoding="utf-8").lower()
             if "fusionador" in text or "fusion_" in text:
                 hits.append(str(path.relative_to(ROOT)))

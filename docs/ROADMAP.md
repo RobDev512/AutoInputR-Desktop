@@ -1,12 +1,12 @@
-# Roadmap de AutoInputR
+# Roadmap de TaskPilot
 
-AutoInputR se desarrolla como una herramienta de **automatización visual y configurable para Windows, sin necesidad de escribir scripts**. El objetivo es evolucionar desde automatizaciones sencillas de mouse, teclado, rutas y detección visual hacia flujos reutilizables y más expresivos, manteniendo una interfaz comprensible y control directo por parte del usuario.
+TaskPilot continúa el proyecto anteriormente conocido como **AutoInputR**. Las versiones hasta v1.3.0 conservan su nombre histórico; el rebranding y la nueva identidad comienzan durante v1.4.0.
+
+TaskPilot se desarrolla como una herramienta de **automatización visual y configurable para Windows, sin necesidad de escribir scripts**.
 
 La definición de producto y los criterios para nuevas funciones se encuentran en [PRODUCT.md](PRODUCT.md).
 
-Este roadmap organiza mejoras funcionales y trabajo técnico previsto. Las versiones futuras son una guía y pueden cambiar de orden según pruebas, estabilidad, utilidad general y prioridad.
-
-## v1.2.3.1 — Base estable de automatización
+## v1.2.3.1 — AutoInputR: base estable de automatización
 
 **Estado: Aplicado**
 
@@ -14,21 +14,25 @@ Este roadmap organiza mejoras funcionales y trabajo técnico previsto. Las versi
 - Configuración persistente y hotkeys globales.
 - Bandeja del sistema y empaquetado para Windows.
 
-## v1.3.0 — Ventana objetivo y base modular
+## v1.3.0 — AutoInputR: ventana objetivo y base modular
 
 **Estado: Aplicado**
 
 - Selector de ventana objetivo por título, proceso y clase.
 - Pausa al perder el foco y reanudación automática opcional.
 - Integración con los cinco módulos principales.
-- Refactor técnico posterior a la publicación: paquete `autoinputr/`, módulos funcionales, servicios Win32/entrada/visión, configuración y diálogos separados.
-- Punto de entrada reducido en `AutoInputR.py`.
-- Definición del producto como herramienta general de automatización de escritorio, dejando los juegos como un caso de uso secundario.
+- Refactor técnico posterior a la publicación hacia el paquete modular `autoinputr/`.
+- Definición del producto como herramienta general de automatización de escritorio.
+- Última versión pública publicada bajo el nombre AutoInputR.
 
-## v1.4.0 — Perfiles y portabilidad
+## v1.4.0 — TaskPilot: rebranding, perfiles y portabilidad
 
-**Estado: Siguiente**
+**Estado: En desarrollo**
 
+- Cambio de nombre de AutoInputR a TaskPilot.
+- Nueva identidad visual y recursos de marca.
+- Paquete Python `taskpilot/` y launcher `TaskPilot.py`.
+- Compatibilidad de migración desde configuraciones de AutoInputR.
 - Perfiles de configuración.
 - Importar y exportar perfiles.
 - Combinaciones de hotkeys.
@@ -89,8 +93,6 @@ Este roadmap organiza mejoras funcionales y trabajo técnico previsto. Las versi
 
 ## Criterios para priorizar funciones
 
-Una función nueva debería aportar valor general al producto y, preferentemente, cumplir estos criterios:
-
 - Resolver una interacción repetitiva real de escritorio.
 - Poder configurarse sin exigir código al usuario.
 - Ser reutilizable en más de una aplicación o escenario.
@@ -101,7 +103,7 @@ Las funciones diseñadas únicamente alrededor de un juego o aplicación concret
 
 ## Backlog técnico permanente
 
-- Mantener compatibilidad de configuración entre versiones.
+- Mantener compatibilidad de configuración entre versiones y durante el rebranding.
 - Añadir pruebas automatizadas cuando se separen nuevas responsabilidades.
 - Reducir dependencias directas entre interfaz, automatización y servicios del sistema.
 - Revisar rendimiento de loops y uso de CPU.

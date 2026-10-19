@@ -1,15 +1,18 @@
-# Checklist de Release de AutoInputR
+# Checklist de Release de TaskPilot
 
 ## Código
 
-- [ ] `APP_VERSION` tiene la versión correcta.
-- [ ] `packaging/AutoInputR.iss` usa la misma versión.
+- [ ] `APP_NAME` es `TaskPilot`.
+- [ ] `APP_VERSION` tiene la versión final correcta y no conserva `-dev`.
+- [ ] `packaging/TaskPilot.iss` usa la misma versión numérica.
 - [ ] No existen restos de funciones experimentales canceladas.
-- [ ] `data/config.json` mantiene compatibilidad y la migración desde `config.json` legado sigue funcionando.
+- [ ] `data/config.json` mantiene compatibilidad.
+- [ ] La migración desde archivos locales legados sigue funcionando.
+- [ ] La transición desde una instalación anterior de AutoInputR fue probada.
 
 ## Pruebas
 
-- [ ] `python -m compileall -q .\AutoInputR.py .\autoinputr` termina sin errores.
+- [ ] `python -m compileall -q .\TaskPilot.py .\taskpilot` termina sin errores.
 - [ ] `python -m unittest discover -s .\tests -v` termina correctamente.
 - [ ] Clicker probado.
 - [ ] KeyPresser probado.
@@ -19,12 +22,14 @@
 - [ ] Ventana objetivo probada con cambio de foco y reanudación.
 - [ ] Configuración persiste después de cerrar/reabrir.
 - [ ] Bandeja del sistema y cierre probados.
+- [ ] Icono, título y Acerca de muestran TaskPilot.
 
 ## Empaquetado
 
 - [ ] PyInstaller termina correctamente.
-- [ ] Ejecutable generado inicia sin consola y carga iconos.
+- [ ] `TaskPilot.exe` inicia sin consola y carga iconos.
 - [ ] Inno Setup compila el instalador.
+- [ ] Actualización desde AutoInputR v1.3.0 probada.
 - [ ] Instalación limpia probada.
 - [ ] Desinstalación probada.
 
@@ -32,7 +37,8 @@
 
 - [ ] `docs/README.md` actualizado.
 - [ ] `docs/CHANGELOG.md` actualizado.
-- [ ] `docs/ROADMAP.md` actualizado si corresponde.
+- [ ] `docs/ROADMAP.md` actualizado.
+- [ ] Hub actualizado con la marca TaskPilot.
 - [ ] Release de GitHub creado.
 - [ ] Instalador adjunto al Release.
 - [ ] SHA-256 calculado y verificado.
