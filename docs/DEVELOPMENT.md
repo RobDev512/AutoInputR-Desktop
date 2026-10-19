@@ -8,7 +8,7 @@ Desde PowerShell en la raíz del repositorio:
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-python -m pip install -r .\requirements-dev.txt
+python -m pip install -r .\requirements\dev.txt
 ```
 
 ## Ejecutar desde Python
@@ -29,7 +29,7 @@ Después abre la aplicación y prueba manualmente el módulo afectado. Si el cam
 ## Reglas del refactor
 
 - No cambiar comportamiento y arquitectura al mismo tiempo salvo que sea necesario.
-- Mantener compatibilidad con `config.json`.
+- Mantener compatibilidad con `data/config.json` y conservar migración desde el `config.json` legado cuando corresponda.
 - No reintroducir el experimento cancelado de Fusionador.
 - No compilar instalador hasta que la ejecución desde Python sea estable.
 - Mantener `AutoInputR.py` como punto de entrada pequeño.

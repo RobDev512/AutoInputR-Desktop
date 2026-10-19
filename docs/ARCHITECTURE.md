@@ -43,7 +43,7 @@ Cada módulo puede usar servicios compartidos a través de la clase compuesta, p
 
 ## Configuración
 
-`config.json` permanece en la raíz de ejecución y está ignorado por Git. La estructura y las claves existentes se conservan para mantener compatibilidad con instalaciones previas.
+`data/config.json` almacena la configuración local y está ignorado por Git. Si existe un `config.json` legado en la raíz de ejecución, AutoInputR lo migra automáticamente a `data/` sin cambiar sus claves. `tracker_template.png` usa la misma estrategia de migración.
 
 ## Recursos
 

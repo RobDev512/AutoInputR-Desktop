@@ -14,6 +14,11 @@ class ArchitectureTests(unittest.TestCase):
 
     def test_expected_files_exist(self):
         expected = [
+            "docs/README.md",
+            "docs/ROADMAP.md",
+            "docs/CHANGELOG.md",
+            "requirements/runtime.txt",
+            "requirements/dev.txt",
             "autoinputr/app.py",
             "autoinputr/core/config.py",
             "autoinputr/core/hotkeys.py",
@@ -34,6 +39,17 @@ class ArchitectureTests(unittest.TestCase):
         for relative in expected:
             with self.subTest(relative=relative):
                 self.assertTrue((ROOT / relative).is_file())
+
+    def test_legacy_root_project_files_are_not_present(self):
+        legacy_root_files = [
+            "README.md",
+            "ROADMAP.md",
+            "CHANGELOG.md",
+            "requirements.txt",
+            "requirements-dev.txt",
+        ]
+        present = [name for name in legacy_root_files if (ROOT / name).exists()]
+        self.assertEqual(present, [])
 
     def test_app_uses_expected_mixins(self):
         tree = ast.parse(

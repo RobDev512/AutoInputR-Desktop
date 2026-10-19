@@ -5,7 +5,7 @@
 - [ ] `APP_VERSION` tiene la versión correcta.
 - [ ] `packaging/AutoInputR.iss` usa la misma versión.
 - [ ] No existen restos de funciones experimentales canceladas.
-- [ ] `config.json` mantiene compatibilidad o existe una migración explícita.
+- [ ] `data/config.json` mantiene compatibilidad y la migración desde `config.json` legado sigue funcionando.
 
 ## Pruebas
 
@@ -30,9 +30,9 @@
 
 ## Documentación y publicación
 
-- [ ] README actualizado.
-- [ ] CHANGELOG actualizado.
-- [ ] ROADMAP actualizado si corresponde.
+- [ ] `docs/README.md` actualizado.
+- [ ] `docs/CHANGELOG.md` actualizado.
+- [ ] `docs/ROADMAP.md` actualizado si corresponde.
 - [ ] Release de GitHub creado.
 - [ ] Instalador adjunto al Release.
 - [ ] SHA-256 calculado y verificado.

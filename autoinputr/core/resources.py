@@ -21,8 +21,12 @@ def get_app_dir():
 
 APP_DIR = get_app_dir()
 
-CONFIG_DIR = APP_DIR
+DATA_DIR = APP_DIR / "data"
+CONFIG_DIR = DATA_DIR
 CONFIG_FILE = CONFIG_DIR / "config.json"
+
+LEGACY_CONFIG_FILE = APP_DIR / "config.json"
+LEGACY_TRACKER_TEMPLATE_FILE = APP_DIR / "tracker_template.png"
 
 
 def get_resource_path(relative_path):
@@ -59,3 +63,27 @@ ICON_ICO_PATH = get_resource_path(
 TRACKER_TEMPLATE_FILE = (
     CONFIG_DIR / "tracker_template.png"
 )
+
+
+def migrate_legacy_local_files():
+    """
+    Mueve archivos locales de versiones anteriores desde la raiz
+    hacia ``data/`` sin sobrescribir archivos ya migrados.
+    """
+    pairs = (
+        (LEGACY_CONFIG_FILE, CONFIG_FILE),
+        (LEGACY_TRACKER_TEMPLATE_FILE, TRACKER_TEMPLATE_FILE),
+    )
+
+    for legacy_path, new_path in pairs:
+        if new_path.exists() or not legacy_path.exists():
+            continue
+
+        try:
+            new_path.parent.mkdir(parents=True, exist_ok=True)
+            legacy_path.replace(new_path)
+        except Exception:
+            pass
+
+
+migrate_legacy_local_files()

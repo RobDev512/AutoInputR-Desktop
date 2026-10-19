@@ -3,6 +3,8 @@
 Los cambios relevantes de AutoInputR se documentan aquí.
 
 ## Unreleased
+- Raíz del repositorio simplificada: documentación en `docs/`, dependencias en `requirements/` y datos locales en `data/`.
+- Migración automática del `config.json` y `tracker_template.png` legados hacia `data/`.
 
 ### Cambiado
 

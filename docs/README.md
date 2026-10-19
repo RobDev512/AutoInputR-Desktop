@@ -2,7 +2,7 @@
 
 AutoInputR es una aplicación de escritorio para Windows orientada a automatizar acciones del mouse y del teclado mediante una interfaz gráfica. Incluye módulos independientes para clicks, pulsaciones de teclas, movimiento del cursor, grabación/reproducción de rutas y rastreo visual por plantilla.
 
-![AutoInputR](docs/images/captura-principal.png)
+![AutoInputR](images/captura-principal.png)
 
 ## Versión actual
 
@@ -86,6 +86,13 @@ El código se organiza como un paquete Python en `autoinputr/`:
 ```text
 AutoInputR.py                 Punto de entrada
 
+assets/                       Recursos visuales
+docs/                         Documentación del proyecto
+packaging/                    Compilación e instalador
+requirements/                 Dependencias de ejecución y desarrollo
+tests/                        Pruebas automáticas
+data/                         Datos locales generados (ignorado por Git)
+
 autoinputr/
 ├── app.py                    Ventana principal y coordinación
 ├── core/
@@ -110,14 +117,16 @@ autoinputr/
         └── window_selector.py
 ```
 
-Consulta [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) para más detalle.
+Consulta [ARCHITECTURE.md](ARCHITECTURE.md) para más detalle.
+
+También puedes consultar [ROADMAP.md](ROADMAP.md) y [CHANGELOG.md](CHANGELOG.md).
 
 ## Desarrollo
 
 Instala las dependencias y ejecuta el punto de entrada:
 
 ```powershell
-python -m pip install -r .\requirements.txt
+python -m pip install -r .\requirements\runtime.txt
 python .\AutoInputR.py
 ```
 
@@ -128,7 +137,7 @@ python -m compileall -q .\AutoInputR.py .\autoinputr
 python -m unittest discover -s .\tests -v
 ```
 
-Las instrucciones completas están en [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
+Las instrucciones completas están en [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## Empaquetado
 

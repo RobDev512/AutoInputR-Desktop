@@ -6,6 +6,12 @@ __pycache__/
 .pytest_cache/
 
 # Configuracion local de AutoInputR
+data/config.json
+data/tracker_template.png
+data/*.log
+data/*.tmp
+
+# Rutas legadas (se migran automaticamente a data/)
 config.json
 tracker_template.png
 *.log
