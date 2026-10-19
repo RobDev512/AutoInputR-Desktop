@@ -1,27 +1,34 @@
-# Evitar subir accidentalmente el código fuente
-*.py
-*.pyw
-*.iss
-*.spec
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
 
-# Ejecutables e instaladores
-*.exe
-*.msi
-
-# Archivos generados por AutoInputR
+# Configuracion local de AutoInputR
 config.json
 tracker_template.png
-
-# Compilaciones
-build/
-dist/
-installer/
-Output/
-
-# Archivos temporales
 *.log
 *.tmp
-__pycache__/
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# PyInstaller
+build/
+dist/
+*.spec
+AutoInputR Data/build/
+AutoInputR Data/dist/
+AutoInputR Data/*.spec
+
+# Ejecutables e instaladores generados
+*.exe
+*.msi
+installer/
+Output/
 
 # Editores
 .vscode/
@@ -30,3 +37,6 @@ __pycache__/
 # Windows
 Thumbs.db
 Desktop.ini
+
+# macOS
+.DS_Store
