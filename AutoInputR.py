@@ -11,14 +11,6 @@ import pystray # type: ignore
 import customtkinter as ctk
 import pyautogui
 
-try:
-    import pydirectinput # type: ignore
-    pydirectinput.PAUSE = 0
-    HAS_PYDIRECTINPUT = True
-except Exception:
-    pydirectinput = None
-    HAS_PYDIRECTINPUT = False
-
 from pynput import keyboard, mouse
 import cv2
 import mss
@@ -45,6 +37,11 @@ from autoinputr.core.config import (
 )
 
 from autoinputr.core.target_window import TargetWindowMixin
+from autoinputr.services.input_backend import (
+    HAS_PYDIRECTINPUT,
+    InputBackendMixin,
+)
+
 from autoinputr.modules.keypresser import KeyPresserMixin
 from autoinputr.modules.clicker import ClickerMixin
 from autoinputr.modules.mover import MoverMixin
@@ -60,7 +57,7 @@ ctk.set_widget_scaling(1.0)
 ctk.set_window_scaling(1.0)
 
 
-class AutoInputR(KeyPresserMixin, ClickerMixin, MoverMixin, TargetWindowMixin, ctk.CTk):
+class AutoInputR(KeyPresserMixin, ClickerMixin, MoverMixin, TargetWindowMixin, InputBackendMixin, ctk.CTk):
     def __init__(self):
         super().__init__()
 
@@ -2801,44 +2798,8 @@ class AutoInputR(KeyPresserMixin, ClickerMixin, MoverMixin, TargetWindowMixin, c
 
 
 
-    def move_cursor_to(self, x, y):
-        x = int(x)
-        y = int(y)
 
-        if self.input_backend == "pydirectinput" and HAS_PYDIRECTINPUT:
-            pydirectinput.moveTo(x, y)
-        else:
-            pyautogui.moveTo(x, y, duration=0)
 
-    def move_cursor_rel(self, dx, dy):
-        dx = int(dx)
-        dy = int(dy)
-
-        if self.input_backend == "pydirectinput" and HAS_PYDIRECTINPUT:
-            pydirectinput.moveRel(dx, dy)
-        else:
-            pyautogui.moveRel(dx, dy, duration=0)
-
-    def click_mouse(self, x=None, y=None, button="left", clicks=1):
-        if self.input_backend == "pydirectinput" and HAS_PYDIRECTINPUT:
-            if x is not None and y is not None:
-                pydirectinput.moveTo(int(x), int(y))
-
-            for _ in range(max(1, int(clicks))):
-                pydirectinput.click(button=button)
-
-            return
-
-        if x is None or y is None:
-            pyautogui.click(button=button, clicks=clicks, interval=0)
-        else:
-            pyautogui.click(
-                x=int(x),
-                y=int(y),
-                button=button,
-                clicks=clicks,
-                interval=0
-            )
 
 
 
