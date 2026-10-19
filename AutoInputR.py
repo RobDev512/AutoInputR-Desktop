@@ -6,7 +6,6 @@ from tkinter import messagebox
 import json
 import os
 import sys
-from pathlib import Path
 from PIL import Image, ImageDraw, ImageTk
 import pystray # type: ignore
 
@@ -28,6 +27,18 @@ import numpy as np
 
 import ctypes
 import ctypes.wintypes
+
+from autoinputr.core.resources import (
+    APP_DIR,
+    CONFIG_DIR,
+    CONFIG_FILE,
+    LOGO_PATH,
+    ICON_PATH,
+    ICON_ICO_PATH,
+    APP_NAME,
+    APP_VERSION,
+    TRACKER_TEMPLATE_FILE,
+)
 
 pyautogui.FAILSAFE = True
 pyautogui.PAUSE = 0
@@ -97,39 +108,6 @@ ctk.set_default_color_theme("blue")
 ctk.set_widget_scaling(1.0)
 ctk.set_window_scaling(1.0)
 
-
-def get_app_dir():
-    if getattr(sys, "frozen", False):
-        return Path(sys.executable).resolve().parent
-
-    return Path(__file__).resolve().parent
-
-APP_DIR = get_app_dir()
-CONFIG_DIR = APP_DIR
-CONFIG_FILE = CONFIG_DIR / "config.json"
-
-def get_resource_path(filename):
-    local_path = APP_DIR / filename
-
-    if local_path.exists():
-        return local_path
-
-    if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
-        bundled_path = Path(sys._MEIPASS) / filename
-
-        if bundled_path.exists():
-            return bundled_path
-
-    return local_path
-
-
-LOGO_PATH = get_resource_path("assets/branding/LogoAIR.png")
-ICON_PATH = get_resource_path("assets/branding/Logo2AIR.png")
-ICON_ICO_PATH = get_resource_path("assets/branding/Logo2AIR.ico")
-
-APP_NAME = "AutoInputR"
-APP_VERSION = "1.3.0"
-TRACKER_TEMPLATE_FILE = CONFIG_DIR / "tracker_template.png"
 
 class AutoInputR(ctk.CTk):
     def __init__(self):
