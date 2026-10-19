@@ -3,7 +3,6 @@ import threading
 import time
 import tkinter as tk
 from tkinter import messagebox
-import json
 import os
 import sys
 from PIL import Image, ImageDraw, ImageTk
@@ -38,6 +37,11 @@ from autoinputr.core.resources import (
     APP_NAME,
     APP_VERSION,
     TRACKER_TEMPLATE_FILE,
+)
+
+from autoinputr.core.config import (
+    load_config_file,
+    save_config_file,
 )
 
 pyautogui.FAILSAFE = True
@@ -2635,19 +2639,10 @@ class AutoInputR(ctk.CTk):
             self.warning_open = False
 
     def load_config(self):
-        try:
-            if CONFIG_FILE.exists():
-                with open(CONFIG_FILE, "r", encoding="utf-8") as file:
-                    return json.load(file)
-        except Exception:
-            pass
-
-        return {}
+        return load_config_file()
 
     def save_config(self):
         try:
-            CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-
             config = {
                 "hotkey": self.hotkey,
                 "center_offset_x": self.center_offset_x,
@@ -2796,8 +2791,7 @@ class AutoInputR(ctk.CTk):
                 config["seconds"] = self.seconds_entry.get()
                 config["milliseconds"] = self.milliseconds_entry.get()
 
-            with open(CONFIG_FILE, "w", encoding="utf-8") as file:
-                json.dump(config, file, indent=4)
+            save_config_file(config)
 
         except Exception:
             pass
