@@ -1,8 +1,18 @@
 # AutoInputR
 
-AutoInputR es una aplicación de escritorio para Windows orientada a automatizar acciones del mouse y del teclado mediante una interfaz gráfica. Incluye módulos independientes para clicks, pulsaciones de teclas, movimiento del cursor, grabación/reproducción de rutas y rastreo visual por plantilla.
+**AutoInputR — Automatización visual y configurable para Windows, sin necesidad de escribir scripts.**
+
+AutoInputR es una aplicación de escritorio para Windows orientada a automatizar interacciones repetitivas con interfaces gráficas. Permite configurar clicks, pulsaciones de teclado, movimientos del cursor, rutas grabadas y acciones basadas en detección visual desde una interfaz gráfica, sin exigir al usuario escribir código.
 
 ![AutoInputR](images/captura-principal.png)
+
+## Propósito del proyecto
+
+AutoInputR busca reducir la distancia entre una tarea repetitiva y una automatización funcional. Su enfoque es ofrecer una herramienta local, comprensible y extensible para automatizaciones de escritorio de complejidad baja o media.
+
+El proyecto se desarrolla como **proyecto personal de software y automatización con enfoque de portafolio**, con potencial para evolucionar hacia una herramienta general de automatización de escritorio. Los juegos pueden ser uno de sus escenarios de uso, pero no constituyen el propósito principal del producto.
+
+La definición completa de producto, usuarios objetivo, principios y límites se encuentra en [PRODUCT.md](PRODUCT.md).
 
 ## Versión actual
 
@@ -79,6 +89,19 @@ La versión oficial más reciente se encuentra en **Releases**:
 - Integración con la bandeja del sistema.
 - Interfaz desarrollada con CustomTkinter.
 
+## Casos de uso
+
+AutoInputR está pensado para automatizaciones sencillas y locales, por ejemplo:
+
+- Repetir interacciones de mouse o teclado.
+- Reproducir secuencias para pruebas o demostraciones.
+- Automatizar pequeños flujos en programas que no ofrecen una API adecuada.
+- Ejecutar acciones condicionadas por una ventana objetivo.
+- Experimentar con automatización visual y reconocimiento por plantilla.
+- Crear rutinas personales repetitivas de bajo riesgo.
+
+El uso en juegos es secundario y debe limitarse a contextos donde la automatización esté permitida por sus reglas o términos de servicio.
+
 ## Estructura del proyecto
 
 El código se organiza como un paquete Python en `autoinputr/`:
@@ -119,7 +142,7 @@ autoinputr/
 
 Consulta [ARCHITECTURE.md](ARCHITECTURE.md) para más detalle.
 
-También puedes consultar [ROADMAP.md](ROADMAP.md) y [CHANGELOG.md](CHANGELOG.md).
+También puedes consultar [PRODUCT.md](PRODUCT.md), [ROADMAP.md](ROADMAP.md) y [CHANGELOG.md](CHANGELOG.md).
 
 ## Desarrollo
 
