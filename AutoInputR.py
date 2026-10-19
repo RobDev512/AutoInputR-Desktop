@@ -44,67 +44,18 @@ from autoinputr.core.config import (
     save_config_file,
 )
 
+from autoinputr.services.windows import (
+    enumerate_visible_windows,
+    get_foreground_window,
+    get_process_name_from_pid as win_get_process_name_from_pid,
+    get_window_info as win_get_window_info,
+    is_window,
+    is_window_minimized,
+)
+
 pyautogui.FAILSAFE = True
 pyautogui.PAUSE = 0
 pyautogui.MINIMUM_DURATION = 0
-
-if sys.platform == "win32":
-    try:
-        ctypes.windll.shcore.SetProcessDpiAwareness(2)
-    except Exception:
-        try:
-            ctypes.windll.user32.SetProcessDPIAware()
-        except Exception:
-            pass
-
-    try:
-        user32 = ctypes.windll.user32
-        kernel32 = ctypes.windll.kernel32
-
-        user32.GetForegroundWindow.restype = ctypes.wintypes.HWND
-        user32.IsWindow.argtypes = [ctypes.wintypes.HWND]
-        user32.IsWindow.restype = ctypes.wintypes.BOOL
-        user32.IsWindowVisible.argtypes = [ctypes.wintypes.HWND]
-        user32.IsWindowVisible.restype = ctypes.wintypes.BOOL
-        user32.IsIconic.argtypes = [ctypes.wintypes.HWND]
-        user32.IsIconic.restype = ctypes.wintypes.BOOL
-        user32.GetWindowTextLengthW.argtypes = [ctypes.wintypes.HWND]
-        user32.GetWindowTextLengthW.restype = ctypes.c_int
-        user32.GetWindowTextW.argtypes = [
-            ctypes.wintypes.HWND,
-            ctypes.wintypes.LPWSTR,
-            ctypes.c_int
-        ]
-        user32.GetWindowTextW.restype = ctypes.c_int
-        user32.GetClassNameW.argtypes = [
-            ctypes.wintypes.HWND,
-            ctypes.wintypes.LPWSTR,
-            ctypes.c_int
-        ]
-        user32.GetClassNameW.restype = ctypes.c_int
-        user32.GetWindowThreadProcessId.argtypes = [
-            ctypes.wintypes.HWND,
-            ctypes.POINTER(ctypes.wintypes.DWORD)
-        ]
-        user32.GetWindowThreadProcessId.restype = ctypes.wintypes.DWORD
-
-        kernel32.OpenProcess.argtypes = [
-            ctypes.wintypes.DWORD,
-            ctypes.wintypes.BOOL,
-            ctypes.wintypes.DWORD
-        ]
-        kernel32.OpenProcess.restype = ctypes.wintypes.HANDLE
-        kernel32.QueryFullProcessImageNameW.argtypes = [
-            ctypes.wintypes.HANDLE,
-            ctypes.wintypes.DWORD,
-            ctypes.wintypes.LPWSTR,
-            ctypes.POINTER(ctypes.wintypes.DWORD)
-        ]
-        kernel32.QueryFullProcessImageNameW.restype = ctypes.wintypes.BOOL
-        kernel32.CloseHandle.argtypes = [ctypes.wintypes.HANDLE]
-        kernel32.CloseHandle.restype = ctypes.wintypes.BOOL
-    except Exception:
-        pass
 
 
 ctk.set_appearance_mode("dark")
@@ -1702,150 +1653,62 @@ class AutoInputR(ctk.CTk):
         )
 
     def get_process_name_from_pid(self, pid):
-        if sys.platform != "win32" or not pid:
-            return ""
-
-        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
-        kernel32 = ctypes.windll.kernel32
-
-        handle = kernel32.OpenProcess(
-            PROCESS_QUERY_LIMITED_INFORMATION,
-            False,
-            int(pid)
-        )
-
-        if not handle:
-            return ""
-
-        try:
-            buffer = ctypes.create_unicode_buffer(1024)
-            size = ctypes.wintypes.DWORD(len(buffer))
-
-            ok = kernel32.QueryFullProcessImageNameW(
-                handle,
-                0,
-                buffer,
-                ctypes.byref(size)
-            )
-
-            if not ok:
-                return ""
-
-            return Path(buffer.value).name
-        except Exception:
-            return ""
-        finally:
-            try:
-                kernel32.CloseHandle(handle)
-            except Exception:
-                pass
+        return win_get_process_name_from_pid(pid)
 
     def get_window_info(self, hwnd):
-        if sys.platform != "win32" or not hwnd:
-            return None
-
-        try:
-            user32 = ctypes.windll.user32
-
-            if not user32.IsWindow(int(hwnd)):
-                return None
-
-            title_length = user32.GetWindowTextLengthW(int(hwnd))
-            title_buffer = ctypes.create_unicode_buffer(max(1, title_length + 1))
-            user32.GetWindowTextW(int(hwnd), title_buffer, len(title_buffer))
-            title = title_buffer.value.strip()
-
-            class_buffer = ctypes.create_unicode_buffer(256)
-            user32.GetClassNameW(int(hwnd), class_buffer, len(class_buffer))
-            class_name = class_buffer.value.strip()
-
-            pid = ctypes.wintypes.DWORD()
-            user32.GetWindowThreadProcessId(int(hwnd), ctypes.byref(pid))
-            process_name = self.get_process_name_from_pid(pid.value)
-
-            return {
-                "hwnd": int(hwnd),
-                "title": title,
-                "process": process_name,
-                "class": class_name,
-                "pid": int(pid.value)
-            }
-        except Exception:
-            return None
+        return win_get_window_info(hwnd)
 
     def enumerate_target_windows(self):
-        if sys.platform != "win32":
-            self.available_target_windows = []
-            self.target_window_label_map = {}
-            return []
-
-        user32 = ctypes.windll.user32
-        windows = []
-        own_pid = os.getpid()
-
-        WNDENUMPROC = ctypes.WINFUNCTYPE(
-            ctypes.c_bool,
-            ctypes.wintypes.HWND,
-            ctypes.wintypes.LPARAM
-        )
-
-        @WNDENUMPROC
-        def enum_callback(hwnd, _lparam):
-            try:
-                if not user32.IsWindowVisible(hwnd):
-                    return True
-
-                info = self.get_window_info(hwnd)
-
-                if not info:
-                    return True
-
-                if info["pid"] == own_pid:
-                    return True
-
-                title = info["title"].strip()
-
-                if not title or title == "Program Manager":
-                    return True
-
-                windows.append(info)
-            except Exception:
-                pass
-
-            return True
-
-        try:
-            user32.EnumWindows(enum_callback, 0)
-        except Exception:
-            windows = []
-
-        windows.sort(
-            key=lambda item: (
-                item.get("process", "").lower(),
-                item.get("title", "").lower()
-            )
+        windows = enumerate_visible_windows(
+            exclude_pid=os.getpid()
         )
 
         label_map = {}
 
         for info in windows:
-            title = info.get("title", "Ventana")
-            process_name = info.get("process", "") or "Proceso desconocido"
+            title = info.get(
+                "title",
+                "Ventana"
+            )
+
+            process_name = (
+                info.get(
+                    "process",
+                    ""
+                )
+                or "Proceso desconocido"
+            )
 
             if len(title) > 58:
-                title = title[:55] + "..."
+                title = (
+                    title[:55]
+                    + "..."
+                )
 
-            base_label = f"{title}  ·  {process_name}"
+            base_label = (
+                f"{title}  ·  "
+                f"{process_name}"
+            )
+
             label = base_label
 
             if label in label_map:
-                label = f"{base_label}  [{info['hwnd']}]"
+                label = (
+                    f"{base_label}  "
+                    f"[{info['hwnd']}]"
+                )
 
             info["label"] = label
             label_map[label] = info
 
-        self.available_target_windows = windows
-        self.target_window_label_map = label_map
+        self.available_target_windows = (
+            windows
+        )
+
+        self.target_window_label_map = (
+            label_map
+        )
+
         return windows
 
     def target_window_matches(self, info):
@@ -1881,7 +1744,7 @@ class AutoInputR(ctk.CTk):
 
         try:
             if sys.platform == "win32" and self.target_window_hwnd:
-                if ctypes.windll.user32.IsWindow(int(self.target_window_hwnd)):
+                if is_window(self.target_window_hwnd):
                     info = self.get_window_info(self.target_window_hwnd)
 
                     if self.target_window_matches(info):
@@ -1995,13 +1858,11 @@ class AutoInputR(ctk.CTk):
             return False, "unavailable", "Ventana objetivo no disponible"
 
         try:
-            user32 = ctypes.windll.user32
-
-            if user32.IsIconic(int(hwnd)):
+            if is_window_minimized(hwnd):
                 return False, "minimized", "Ventana objetivo minimizada"
 
             if self.target_window_focus_only:
-                foreground = int(user32.GetForegroundWindow() or 0)
+                foreground = get_foreground_window()
 
                 if foreground != int(hwnd):
                     return False, "inactive", "Ventana objetivo sin foco"
@@ -2206,7 +2067,7 @@ class AutoInputR(ctk.CTk):
             info = None
 
             try:
-                hwnd = int(ctypes.windll.user32.GetForegroundWindow() or 0)
+                hwnd = get_foreground_window()
                 info = self.get_window_info(hwnd)
 
                 if info and info.get("pid") == os.getpid():
