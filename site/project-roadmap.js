@@ -298,35 +298,97 @@ function prepareRoadmapCardMotion(
     "roadmap-enter"
   );
 
+  const finePointer =
+    window.matchMedia(
+      "(hover: hover) and (pointer: fine)"
+    ).matches;
+
+  const reduceMotion =
+    window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+  if (
+    !finePointer ||
+    reduceMotion
+  ) {
+    return;
+  }
+
+  let rect = null;
+  let frame = 0;
+  let pointerX = 0;
+  let pointerY = 0;
+
+  const update = () => {
+    frame = 0;
+
+    if (!rect) {
+      return;
+    }
+
+    button.style.setProperty(
+      "--roadmap-pointer-x",
+      `${pointerX - rect.left}px`
+    );
+
+    button.style.setProperty(
+      "--roadmap-pointer-y",
+      `${pointerY - rect.top}px`
+    );
+
+    button.classList.add(
+      "roadmap-pointer-active"
+    );
+  };
+
+  button.addEventListener(
+    "pointerenter",
+    () => {
+      rect =
+        button.getBoundingClientRect();
+    },
+    { passive: true }
+  );
+
   button.addEventListener(
     "pointermove",
     (event) => {
-      const rect =
-        button.getBoundingClientRect();
+      pointerX = event.clientX;
+      pointerY = event.clientY;
 
-      button.style.setProperty(
-        "--roadmap-pointer-x",
-        `${event.clientX - rect.left}px`
-      );
+      if (!rect) {
+        rect =
+          button.getBoundingClientRect();
+      }
 
-      button.style.setProperty(
-        "--roadmap-pointer-y",
-        `${event.clientY - rect.top}px`
-      );
+      if (frame) {
+        return;
+      }
 
-      button.classList.add(
-        "roadmap-pointer-active"
-      );
-    }
+      frame =
+        requestAnimationFrame(
+          update
+        );
+    },
+    { passive: true }
   );
 
   button.addEventListener(
     "pointerleave",
     () => {
+      if (frame) {
+        cancelAnimationFrame(frame);
+        frame = 0;
+      }
+
+      rect = null;
+
       button.classList.remove(
         "roadmap-pointer-active"
       );
-    }
+    },
+    { passive: true }
   );
 }
 
