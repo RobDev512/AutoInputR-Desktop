@@ -1,0 +1,159 @@
+/* =========================================================
+   ROBDEV512 · PROJECT PAGE IDENTITIES
+   Shared layout, project-specific color systems.
+   ========================================================= */
+
+body[data-project-id="convertidor-archivos"] {
+  --bg: #0d0818;
+  --panel: #171022;
+  --panel-2: #21152f;
+  --line: rgba(168, 85, 247, .14);
+  --text: #fbf7ff;
+  --muted: #b6a8c8;
+  --accent: #a855f7;
+  --accent-soft: #c084fc;
+  --accent-rgb: 168, 85, 247;
+  --identity-secondary: #ec4899;
+  --identity-secondary-rgb: 236, 72, 153;
+  --cyan: #ec4899;
+  --green: #f472b6;
+
+  background:
+    radial-gradient(circle at 78% 4%, rgba(168, 85, 247, .15), transparent 28rem),
+    radial-gradient(circle at 12% 34%, rgba(236, 72, 153, .08), transparent 25rem),
+    linear-gradient(155deg, #10091b 0%, #0d0818 50%, #14091b 100%);
+}
+
+body[data-project-id="tecnet-finder"] {
+  --bg: #061310;
+  --panel: #0a1d19;
+  --panel-2: #0f2922;
+  --line: rgba(20, 184, 166, .14);
+  --text: #f4fff9;
+  --muted: #9fbcb3;
+  --accent: #14b8a6;
+  --accent-soft: #5eead4;
+  --accent-rgb: 20, 184, 166;
+  --identity-secondary: #84cc16;
+  --identity-secondary-rgb: 132, 204, 22;
+  --cyan: #84cc16;
+  --green: #a3e635;
+
+  background:
+    radial-gradient(circle at 78% 4%, rgba(20, 184, 166, .14), transparent 28rem),
+    radial-gradient(circle at 12% 34%, rgba(132, 204, 22, .07), transparent 25rem),
+    linear-gradient(155deg, #071713 0%, #061310 50%, #0a1810 100%);
+}
+
+body[data-project-id="labnotes"] {
+  --bg: #07111f;
+  --panel: #0e1a2a;
+  --panel-2: #111f31;
+  --line: rgba(105, 174, 252, .16);
+  --text: #f4f8ff;
+  --muted: #91a8c1;
+  --accent: #69aefc;
+  --accent-soft: #8ec3ff;
+  --accent-rgb: 105, 174, 252;
+  --identity-secondary: #2dd4bf;
+  --identity-secondary-rgb: 45, 212, 191;
+  --cyan: #2dd4bf;
+  --green: #43d39e;
+
+  background:
+    radial-gradient(circle at 78% 4%, rgba(105, 174, 252, .14), transparent 28rem),
+    radial-gradient(circle at 12% 34%, rgba(45, 212, 191, .075), transparent 25rem),
+    linear-gradient(155deg, #071422 0%, #07111f 50%, #071816 100%);
+}
+
+body[data-project-id="convertidor-archivos"] .eyebrow,
+body[data-project-id="convertidor-archivos"] .section-kicker,
+body[data-project-id="tecnet-finder"] .eyebrow,
+body[data-project-id="tecnet-finder"] .section-kicker,
+body[data-project-id="labnotes"] .eyebrow,
+body[data-project-id="labnotes"] .section-kicker {
+  color: var(--identity-secondary);
+}
+
+body[data-project-id="convertidor-archivos"] .hero-title-accent,
+body[data-project-id="tecnet-finder"] .hero-title-accent,
+body[data-project-id="labnotes"] .hero-title-accent {
+  color: transparent;
+  background: linear-gradient(
+    135deg,
+    var(--accent) 0%,
+    var(--accent-soft) 48%,
+    var(--identity-secondary) 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+body[data-project-id="convertidor-archivos"] .btn-primary,
+body[data-project-id="tecnet-finder"] .btn-primary,
+body[data-project-id="labnotes"] .btn-primary {
+  color: #ffffff;
+  background: linear-gradient(
+    135deg,
+    var(--accent) 0%,
+    var(--accent-soft) 52%,
+    var(--identity-secondary) 100%
+  );
+  box-shadow: 0 12px 30px rgba(var(--accent-rgb), .22);
+}
+
+body[data-project-id="tecnet-finder"] .btn-primary {
+  color: #06110d;
+}
+
+body[data-project-id="convertidor-archivos"] .btn-primary:hover,
+body[data-project-id="tecnet-finder"] .btn-primary:hover,
+body[data-project-id="labnotes"] .btn-primary:hover {
+  box-shadow: 0 16px 38px rgba(var(--identity-secondary-rgb), .22);
+  filter: brightness(1.07) saturate(1.08);
+}
+
+body[data-project-id="convertidor-archivos"] .btn-secondary:hover,
+body[data-project-id="tecnet-finder"] .btn-secondary:hover,
+body[data-project-id="labnotes"] .btn-secondary:hover {
+  border-color: rgba(var(--identity-secondary-rgb), .58);
+}
+
+body[data-project-id="convertidor-archivos"] .brand-dot,
+body[data-project-id="tecnet-finder"] .brand-dot,
+body[data-project-id="labnotes"] .brand-dot {
+  background: linear-gradient(135deg, var(--accent), var(--identity-secondary));
+  box-shadow: 0 0 20px rgba(var(--identity-secondary-rgb), .42);
+}
+
+body[data-project-id="convertidor-archivos"] .hero-logo-wrap,
+body[data-project-id="tecnet-finder"] .hero-logo-wrap,
+body[data-project-id="labnotes"] .hero-logo-wrap {
+  background:
+    radial-gradient(circle at 50% 38%, rgba(var(--identity-secondary-rgb), .09), transparent 54%),
+    radial-gradient(circle at 50% 48%, rgba(var(--accent-rgb), .10), transparent 68%),
+    rgba(15, 21, 29, .78);
+}
+
+body[data-project-id="convertidor-archivos"] .orbit-b,
+body[data-project-id="tecnet-finder"] .orbit-b,
+body[data-project-id="labnotes"] .orbit-b {
+  border-color: rgba(var(--identity-secondary-rgb), .15);
+}
+
+body[data-project-id="convertidor-archivos"] .satellite-b,
+body[data-project-id="tecnet-finder"] .satellite-b,
+body[data-project-id="labnotes"] .satellite-b {
+  background: var(--identity-secondary);
+  box-shadow: 0 0 18px rgba(var(--identity-secondary-rgb), .66);
+}
+
+body[data-project-id="convertidor-archivos"] .roadmap-filter:hover,
+body[data-project-id="convertidor-archivos"] .roadmap-filter.active,
+body[data-project-id="tecnet-finder"] .roadmap-filter:hover,
+body[data-project-id="tecnet-finder"] .roadmap-filter.active,
+body[data-project-id="labnotes"] .roadmap-filter:hover,
+body[data-project-id="labnotes"] .roadmap-filter.active {
+  border-color: rgba(var(--identity-secondary-rgb), .42);
+}
