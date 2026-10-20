@@ -823,9 +823,7 @@ function enablePortalMotion() {
         (entries) => {
           entries.forEach(
             (entry) => {
-              if (
-                !entry.isIntersecting
-              ) {
+              if (!entry.isIntersecting) {
                 return;
               }
 
@@ -867,47 +865,102 @@ function enablePortalMotion() {
     );
   }
 
+  const finePointer =
+    window.matchMedia(
+      "(hover: hover) and (pointer: fine)"
+    ).matches;
+
+  if (
+    reduceMotion ||
+    !finePointer
+  ) {
+    return;
+  }
+
   document
     .querySelectorAll(
       ".release-card, .next-release, .feature-strip article"
     )
     .forEach(
       (target) => {
+        let rect = null;
+        let frame = 0;
+        let pointerX = 0;
+        let pointerY = 0;
+
+        const update = () => {
+          frame = 0;
+
+          if (!rect) {
+            return;
+          }
+
+          target.style.setProperty(
+            "--pointer-x",
+            `${pointerX - rect.left}px`
+          );
+
+          target.style.setProperty(
+            "--pointer-y",
+            `${pointerY - rect.top}px`
+          );
+
+          target.classList.add(
+            "pointer-active"
+          );
+        };
+
+        target.addEventListener(
+          "pointerenter",
+          () => {
+            rect =
+              target.getBoundingClientRect();
+          },
+          { passive: true }
+        );
+
         target.addEventListener(
           "pointermove",
           (event) => {
-            const rect =
-              target.getBoundingClientRect();
+            pointerX = event.clientX;
+            pointerY = event.clientY;
 
-            target.style.setProperty(
-              "--pointer-x",
-              `${event.clientX - rect.left}px`
-            );
+            if (!rect) {
+              rect =
+                target.getBoundingClientRect();
+            }
 
-            target.style.setProperty(
-              "--pointer-y",
-              `${event.clientY - rect.top}px`
-            );
+            if (frame) {
+              return;
+            }
 
-            target.classList.add(
-              "pointer-active"
-            );
-          }
+            frame =
+              requestAnimationFrame(
+                update
+              );
+          },
+          { passive: true }
         );
 
         target.addEventListener(
           "pointerleave",
           () => {
+            if (frame) {
+              cancelAnimationFrame(frame);
+              frame = 0;
+            }
+
+            rect = null;
+
             target.classList.remove(
               "pointer-active"
             );
-          }
+          },
+          { passive: true }
         );
       }
     );
 }
-
-
 
 
 /* =========================================================
@@ -938,7 +991,11 @@ function installScrollProgress() {
     progress
   );
 
+  let frame = 0;
+
   const update = () => {
+    frame = 0;
+
     const maxScroll =
       document.documentElement.scrollHeight -
       window.innerHeight;
@@ -959,19 +1016,29 @@ function installScrollProgress() {
       `scaleX(${ratio})`;
   };
 
-  update();
+  const scheduleUpdate = () => {
+    if (frame) {
+      return;
+    }
+
+    frame =
+      requestAnimationFrame(
+        update
+      );
+  };
+
+  scheduleUpdate();
 
   window.addEventListener(
     "scroll",
-    update,
-    {
-      passive: true
-    }
+    scheduleUpdate,
+    { passive: true }
   );
 
   window.addEventListener(
     "resize",
-    update
+    scheduleUpdate,
+    { passive: true }
   );
 }
 
@@ -986,6 +1053,23 @@ function installRippleFeedback() {
 
   document.body.dataset.rippleReady =
     "true";
+
+  const finePointer =
+    window.matchMedia(
+      "(hover: hover) and (pointer: fine)"
+    ).matches;
+
+  const reduceMotion =
+    window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+  if (
+    !finePointer ||
+    reduceMotion
+  ) {
+    return;
+  }
 
   document.addEventListener(
     "pointerdown",
@@ -1061,9 +1145,15 @@ function installHeroParallax() {
       ".hero-visual"
     );
 
+  const finePointer =
+    window.matchMedia(
+      "(hover: hover) and (pointer: fine)"
+    ).matches;
+
   if (
     !hero ||
     !visual ||
+    !finePointer ||
     window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches
@@ -1071,7 +1161,19 @@ function installHeroParallax() {
     return;
   }
 
+  let rect = null;
+  let frame = 0;
+  let pointerX = 0;
+  let pointerY = 0;
+
   const reset = () => {
+    if (frame) {
+      cancelAnimationFrame(frame);
+      frame = 0;
+    }
+
+    rect = null;
+
     visual.style.setProperty(
       "--parallax-logo-x",
       "0px"
@@ -1103,63 +1205,104 @@ function installHeroParallax() {
     );
   };
 
+  const update = () => {
+    frame = 0;
+
+    if (!rect) {
+      return;
+    }
+
+    const x =
+      (
+        pointerX -
+        rect.left
+      ) /
+      rect.width -
+      .5;
+
+    const y =
+      (
+        pointerY -
+        rect.top
+      ) /
+      rect.height -
+      .5;
+
+    visual.style.setProperty(
+      "--parallax-logo-x",
+      `${x * 16}px`
+    );
+
+    visual.style.setProperty(
+      "--parallax-logo-y",
+      `${y * 12}px`
+    );
+
+    visual.style.setProperty(
+      "--parallax-orbit-x",
+      `${x * -9}px`
+    );
+
+    visual.style.setProperty(
+      "--parallax-orbit-y",
+      `${y * -7}px`
+    );
+
+    visual.style.setProperty(
+      "--parallax-satellite-x",
+      `${x * 22}px`
+    );
+
+    visual.style.setProperty(
+      "--parallax-satellite-y",
+      `${y * 16}px`
+    );
+  };
+
+  hero.addEventListener(
+    "pointerenter",
+    () => {
+      rect =
+        hero.getBoundingClientRect();
+    },
+    { passive: true }
+  );
+
   hero.addEventListener(
     "pointermove",
     (event) => {
-      const rect =
-        hero.getBoundingClientRect();
+      pointerX = event.clientX;
+      pointerY = event.clientY;
 
-      const x =
-        (
-          event.clientX -
-          rect.left
-        ) /
-        rect.width -
-        .5;
+      if (!rect) {
+        rect =
+          hero.getBoundingClientRect();
+      }
 
-      const y =
-        (
-          event.clientY -
-          rect.top
-        ) /
-        rect.height -
-        .5;
+      if (frame) {
+        return;
+      }
 
-      visual.style.setProperty(
-        "--parallax-logo-x",
-        `${x * 16}px`
-      );
-
-      visual.style.setProperty(
-        "--parallax-logo-y",
-        `${y * 12}px`
-      );
-
-      visual.style.setProperty(
-        "--parallax-orbit-x",
-        `${x * -9}px`
-      );
-
-      visual.style.setProperty(
-        "--parallax-orbit-y",
-        `${y * -7}px`
-      );
-
-      visual.style.setProperty(
-        "--parallax-satellite-x",
-        `${x * 22}px`
-      );
-
-      visual.style.setProperty(
-        "--parallax-satellite-y",
-        `${y * 16}px`
-      );
-    }
+      frame =
+        requestAnimationFrame(
+          update
+        );
+    },
+    { passive: true }
   );
 
   hero.addEventListener(
     "pointerleave",
-    reset
+    reset,
+    { passive: true }
+  );
+
+  window.addEventListener(
+    "resize",
+    () => {
+      rect = null;
+    },
+    { passive: true }
   );
 
   reset();

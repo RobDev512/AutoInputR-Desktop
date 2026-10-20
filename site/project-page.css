@@ -2337,8 +2337,6 @@ body::after {
   filter:
     blur(72px);
 
-  will-change:
-    transform;
 }
 
 
@@ -3161,3 +3159,16 @@ body.theme-taskpilot {
 /* =========================================================
    END TASKPILOT THEME
    ========================================================= */
+
+/* =========================================================
+   PROJECT PAGE · PERFORMANCE GUARD
+   ========================================================= */
+
+@media (max-width: 900px), (hover: none), (pointer: coarse) {
+
+  body::before,
+  body::after {
+    animation: none !important;
+  }
+
+}
