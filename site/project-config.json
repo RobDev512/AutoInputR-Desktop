@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 2,
+  "pages": [
+    {
+      "id": "taskpilot",
+      "theme": "theme-taskpilot",
+      "title": "TaskPilot",
+      "documentTitle": "TaskPilot · RobDev512",
+      "metaDescription": "TaskPilot, automatización visual y configurable para Windows sin necesidad de escribir scripts.",
+      "eyebrow": "Aplicación de escritorio · Automatización",
+      "logo": {
+        "src": "./assets/taskpilot-logo-horizontal.png",
+        "alt": "Logo de TaskPilot"
+      },
+      "repository": {
+        "label": "GitHub",
+        "url": "https://github.com/RobDev512/TaskPilot-Desktop",
+        "external": true
+      },
+      "hero": {
+        "titleLines": [
+          "Task",
+          "Pilot"
+        ],
+        "description": "Automatización visual y configurable para Windows: clicks, teclado, movimiento, rutas y detección visual desde una interfaz gráfica, sin necesidad de escribir scripts.",
+        "actions": [
+          {
+            "label": "AutoInputR 1.3.0",
+            "url": "https://github.com/RobDev512/TaskPilot-Desktop/releases/download/v1.3.0/AutoInputR_Setup_v1.3.0.exe",
+            "style": "primary",
+            "external": true
+          },
+          {
+            "label": "Ver roadmap",
+            "url": "#roadmap-explorer",
+            "style": "secondary",
+            "external": false
+          }
+        ],
+        "meta": [
+          {
+            "strong": "v1.4.0-dev",
+            "small": "TaskPilot · en desarrollo"
+          },
+          {
+            "strong": "Windows",
+            "small": "Automatización local"
+          },
+          {
+            "strong": "Sin scripts",
+            "small": "Interfaz visual configurable"
+          }
+        ],
+        "titleLogo": {
+          "src": "./assets/taskpilot-icon.png",
+          "alt": "Icono de TaskPilot"
+        }
+      },
+      "features": [
+        {
+          "title": "Entrada automatizada",
+          "text": "Clicks, pulsaciones de teclado y movimiento del cursor con intervalos, modos y hotkeys configurables."
+        },
+        {
+          "title": "Rutas",
+          "text": "Grabación y reproducción de movimientos y clicks para repetir interacciones de forma consistente."
+        },
+        {
+          "title": "Rastreo visual",
+          "text": "Detección por plantilla con OpenCV para localizar objetivos y reaccionar a elementos visibles en pantalla."
+        },
+        {
+          "title": "Ventana objetivo",
+          "text": "Control contextual por título, proceso y clase, con pausa y reanudación automática al cambiar el foco."
+        }
+      ],
+      "release": {
+        "kicker": "Última release pública",
+        "version": "AutoInputR v1.3.0",
+        "summary": "TaskPilot continúa el proyecto anteriormente llamado AutoInputR. La última release pública conserva el nombre AutoInputR v1.3.0 y su historial permanece intacto.",
+        "status": "Aplicada",
+        "title": "Target Window Update",
+        "items": [
+          "Selector de ventana objetivo por título, proceso y clase.",
+          "Pausa automática al perder el foco.",
+          "Reanudación automática opcional al recuperarlo.",
+          "Protección integrada en Clicker, KeyPresser, Mover, Ruta y Rastreador.",
+          "Persistencia de la selección entre ejecuciones."
+        ],
+        "link": {
+          "label": "Explorar releases en GitHub →",
+          "url": "https://github.com/RobDev512/TaskPilot-Desktop/releases",
+          "external": true
+        }
+      },
+      "roadmap": {
+        "kicker": "Roadmap dinámico",
+        "title": "Explora la evolución de TaskPilot",
+        "description": "TaskPilot continúa la evolución iniciada por AutoInputR y avanza hacia perfiles, macros, condiciones y un estudio visual de automatización sin scripts."
+      },
+      "nextRelease": {
+        "kicker": "Siguiente versión",
+        "title": "v1.4.0 · Perfiles y portabilidad",
+        "text": "Primera versión bajo el nombre TaskPilot. La siguiente etapa se centra en perfiles reutilizables, importación y exportación, combinaciones de hotkeys y detección de conflictos."
+      },
+      "footer": {
+        "left": "TaskPilot · Anteriormente AutoInputR · Automatización visual para Windows",
+        "right": {
+          "label": "AutoInputR 1.3.0",
+          "url": "https://github.com/RobDev512/TaskPilot-Desktop/releases/download/v1.3.0/AutoInputR_Setup_v1.3.0.exe",
+          "external": true
+        }
+      }
+    }
+  ]
+}
